@@ -15,6 +15,52 @@ interface CanvasComponentProps {
   onAddComponent: (type: ComponentType, position?: { x: number; y: number }, parentId?: string) => void;
 }
 
+// Drop zone component for containers
+function ContainerDropZone({ 
+  component, 
+  onAddComponent, 
+  className, 
+  style, 
+  children 
+}: { 
+  component: Component;
+  onAddComponent: (type: ComponentType, position?: { x: number; y: number }, parentId?: string) => void;
+  className?: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+}) {
+  const dropRef = useRef<HTMLDivElement>(null);
+  
+  const [{ isOver, canDrop }, drop] = useDrop(() => ({
+    accept: [DragItemTypes.COMPONENT, DragItemTypes.CANVAS_COMPONENT],
+    drop: (item: { type: string; id?: string }, monitor) => {
+      if (!monitor.didDrop()) {
+        if (item.id) {
+          // Moving existing component - handled by parent
+          return;
+        } else {
+          // Adding new component to container
+          onAddComponent(item.type as ComponentType, undefined, component.id);
+        }
+      }
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver({ shallow: true }),
+      canDrop: monitor.canDrop(),
+    }),
+  }));
+
+  return (
+    <div
+      ref={drop}
+      className={`${className} ${isOver && canDrop ? 'ring-2 ring-blue-400 ring-offset-1' : ''}`}
+      style={style}
+    >
+      {children}
+    </div>
+  );
+}
+
 export function CanvasComponent({
   component,
   isSelected,
@@ -24,7 +70,6 @@ export function CanvasComponent({
   onUpdatePosition,
   onAddComponent
 }: CanvasComponentProps) {
-  const dropRef = useRef<HTMLDivElement>(null);
   const [{ isDragging }, drag] = useDrag(() => ({
     type: DragItemTypes.CANVAS_COMPONENT,
     item: { id: component.id, type: component.type },
@@ -42,12 +87,19 @@ export function CanvasComponent({
     const { type, props, styles } = component;
     const combinedStyles = {
       ...styles,
-      ...(component.position && {
+      // Only apply positioning for root-level components, not nested ones
+      ...(component.position && !isNestedComponent(component) && {
         position: 'relative' as const,
         left: `${component.position.x}px`,
         top: `${component.position.y}px`
       })
     };
+    
+    function isNestedComponent(comp: Component): boolean {
+      // Check if this component has a parent by checking if it's not in the root components list
+      // This is a simple check - in a more complex app you'd track parent relationships
+      return false; // For now, let all components flow naturally
+    }
 
     switch (type) {
       case 'heading':
@@ -144,7 +196,9 @@ export function CanvasComponent({
       case 'grid':
         const gridCols = props.columns || 2;
         return (
-          <div
+          <ContainerDropZone 
+            component={component}
+            onAddComponent={onAddComponent}
             className={props.className}
             style={{
               ...combinedStyles,
@@ -153,7 +207,7 @@ export function CanvasComponent({
               gap: props.gap || '16px'
             }}
           >
-            {component.children?.map((child) => (
+            {component.children?.map((child: Component) => (
               <CanvasComponent
                 key={child.id}
                 component={child}
@@ -162,6 +216,7 @@ export function CanvasComponent({
                 onDelete={onDelete}
                 onDuplicate={onDuplicate}
                 onUpdatePosition={onUpdatePosition}
+                onAddComponent={onAddComponent}
               />
             ))}
             {Array.from({ length: Math.max(0, gridCols - (component.children?.length || 0)) }).map((_, i) => (
@@ -172,12 +227,14 @@ export function CanvasComponent({
                 Drop content here
               </div>
             ))}
-          </div>
+          </ContainerDropZone>
         );
 
       case 'flexbox':
         return (
-          <div
+          <ContainerDropZone 
+            component={component}
+            onAddComponent={onAddComponent}
             className={props.className}
             style={{
               ...combinedStyles,
@@ -186,7 +243,7 @@ export function CanvasComponent({
               gap: props.gap || '16px'
             }}
           >
-            {component.children?.map((child) => (
+            {component.children?.map((child: Component) => (
               <CanvasComponent
                 key={child.id}
                 component={child}
@@ -195,6 +252,7 @@ export function CanvasComponent({
                 onDelete={onDelete}
                 onDuplicate={onDuplicate}
                 onUpdatePosition={onUpdatePosition}
+                onAddComponent={onAddComponent}
               />
             ))}
             {(!component.children || component.children.length === 0) && (
@@ -202,33 +260,37 @@ export function CanvasComponent({
                 Flexbox - Drop components here
               </div>
             )}
-          </div>
+          </ContainerDropZone>
         );
 
       case 'form':
         return (
-          <form
+          <ContainerDropZone 
+            component={component}
+            onAddComponent={onAddComponent}
             className={props.className}
             style={combinedStyles}
-            onSubmit={(e) => e.preventDefault()}
           >
-            {component.children?.map((child) => (
-              <CanvasComponent
-                key={child.id}
-                component={child}
-                isSelected={false}
-                onSelect={onSelect}
-                onDelete={onDelete}
-                onDuplicate={onDuplicate}
-                onUpdatePosition={onUpdatePosition}
-              />
-            ))}
-            {(!component.children || component.children.length === 0) && (
-              <div className="text-center py-4 text-gray-400 text-sm">
-                Form - Drop form elements here
-              </div>
-            )}
-          </form>
+            <form onSubmit={(e) => e.preventDefault()}>
+              {component.children?.map((child: Component) => (
+                <CanvasComponent
+                  key={child.id}
+                  component={child}
+                  isSelected={false}
+                  onSelect={onSelect}
+                  onDelete={onDelete}
+                  onDuplicate={onDuplicate}
+                  onUpdatePosition={onUpdatePosition}
+                  onAddComponent={onAddComponent}
+                />
+              ))}
+              {(!component.children || component.children.length === 0) && (
+                <div className="text-center py-4 text-gray-400 text-sm">
+                  Form - Drop form elements here
+                </div>
+              )}
+            </form>
+          </ContainerDropZone>
         );
 
       case 'select':

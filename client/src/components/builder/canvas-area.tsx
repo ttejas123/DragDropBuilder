@@ -157,6 +157,7 @@ export function CanvasArea({
                   onDelete={onDeleteComponent}
                   onDuplicate={onDuplicateComponent}
                   onUpdatePosition={onMoveComponent}
+                  onAddComponent={onAddComponent}
                 />
               ))}
             </div>
