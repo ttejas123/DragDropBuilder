@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { COMPONENT_DEFINITIONS, getComponentsByCategory } from '@/lib/component-types';
 import { DragItemTypes } from '@/lib/drag-drop-utils';
 import { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Type, AlignLeft, MousePointer, Edit3, Image, Link, Square, Grid3X3, ArrowLeftRight, FileText, List, CheckSquare } from 'lucide-react';
 
 interface DraggableComponentProps {
   type: string;
@@ -23,6 +23,22 @@ function DraggableComponent({ type, name, icon, description }: DraggableComponen
     }),
   }));
 
+  // Map icon names to actual Lucide components
+  const IconComponent = {
+    'Type': Type,
+    'AlignLeft': AlignLeft,
+    'MousePointer': MousePointer,
+    'Edit3': Edit3,
+    'Image': Image,
+    'Link': Link,
+    'Square': Square,
+    'Grid3X3': Grid3X3,
+    'ArrowLeftRight': ArrowLeftRight,
+    'FileText': FileText,
+    'List': List,
+    'CheckSquare': CheckSquare,
+  }[icon] || Square;
+
   return (
     <div
       ref={drag}
@@ -32,7 +48,7 @@ function DraggableComponent({ type, name, icon, description }: DraggableComponen
     >
       <div className="flex flex-col items-center text-center">
         <div className="w-8 h-8 bg-blue-100 rounded-md flex items-center justify-center mb-2 group-hover:bg-blue-200 transition-colors">
-          <i className={`${icon} text-blue-600 text-sm`} />
+          <IconComponent className="w-4 h-4 text-blue-600" />
         </div>
         <span className="text-xs font-medium text-gray-900 group-hover:text-primary transition-colors">
           {name}

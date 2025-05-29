@@ -1,8 +1,9 @@
-import { useDrag } from 'react-dnd';
+import { useDrag, useDrop } from 'react-dnd';
 import { Component, ComponentType } from '@shared/schema';
-import { DragItemTypes } from '@/lib/drag-drop-utils';
+import { DragItemTypes, getDropPosition } from '@/lib/drag-drop-utils';
 import { Trash2, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useRef } from 'react';
 
 interface CanvasComponentProps {
   component: Component;
@@ -11,6 +12,7 @@ interface CanvasComponentProps {
   onDelete: (id: string) => void;
   onDuplicate: (id: string) => void;
   onUpdatePosition: (id: string, position: { x: number; y: number }) => void;
+  onAddComponent: (type: ComponentType, position?: { x: number; y: number }, parentId?: string) => void;
 }
 
 export function CanvasComponent({
@@ -19,8 +21,10 @@ export function CanvasComponent({
   onSelect,
   onDelete,
   onDuplicate,
-  onUpdatePosition
+  onUpdatePosition,
+  onAddComponent
 }: CanvasComponentProps) {
+  const dropRef = useRef<HTMLDivElement>(null);
   const [{ isDragging }, drag] = useDrag(() => ({
     type: DragItemTypes.CANVAS_COMPONENT,
     item: { id: component.id, type: component.type },
@@ -111,11 +115,13 @@ export function CanvasComponent({
 
       case 'container':
         return (
-          <div
+          <ContainerDropZone 
+            component={component}
+            onAddComponent={onAddComponent}
             className={props.className}
             style={combinedStyles}
           >
-            {component.children?.map((child) => (
+            {component.children?.map((child: Component) => (
               <CanvasComponent
                 key={child.id}
                 component={child}
@@ -124,6 +130,7 @@ export function CanvasComponent({
                 onDelete={onDelete}
                 onDuplicate={onDuplicate}
                 onUpdatePosition={onUpdatePosition}
+                onAddComponent={onAddComponent}
               />
             ))}
             {(!component.children || component.children.length === 0) && (
@@ -131,7 +138,7 @@ export function CanvasComponent({
                 Container - Drop components here
               </div>
             )}
-          </div>
+          </ContainerDropZone>
         );
 
       case 'grid':

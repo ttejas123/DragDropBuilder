@@ -21,10 +21,12 @@ export function getDropPosition(monitor: any, ref: React.RefObject<HTMLElement>)
   if (!ref.current) return { x: 0, y: 0 };
   
   const clientOffset = monitor.getClientOffset();
+  if (!clientOffset) return { x: 0, y: 0 };
+  
   const componentRect = ref.current.getBoundingClientRect();
   
   return {
-    x: clientOffset.x - componentRect.left,
-    y: clientOffset.y - componentRect.top
+    x: Math.max(0, clientOffset.x - componentRect.left),
+    y: Math.max(0, clientOffset.y - componentRect.top)
   };
 }

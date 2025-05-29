@@ -15,7 +15,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
   {
     type: 'heading',
     name: 'Heading',
-    icon: 'fas fa-heading',
+    icon: 'Type',
     category: 'basic',
     description: 'H1-H6 elements',
     defaultProps: {
@@ -32,7 +32,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
   {
     type: 'paragraph',
     name: 'Paragraph',
-    icon: 'fas fa-paragraph',
+    icon: 'AlignLeft',
     category: 'basic',
     description: 'Text content',
     defaultProps: {
@@ -47,7 +47,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
   {
     type: 'button',
     name: 'Button',
-    icon: 'fas fa-mouse-pointer',
+    icon: 'MousePointer',
     category: 'basic',
     description: 'Interactive button',
     defaultProps: {
@@ -64,7 +64,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
   {
     type: 'input',
     name: 'Input',
-    icon: 'fas fa-edit',
+    icon: 'Edit3',
     category: 'basic',
     description: 'Text input field',
     defaultProps: {
@@ -81,7 +81,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
   {
     type: 'image',
     name: 'Image',
-    icon: 'fas fa-image',
+    icon: 'Image',
     category: 'basic',
     description: 'Image element',
     defaultProps: {
@@ -97,7 +97,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
   {
     type: 'link',
     name: 'Link',
-    icon: 'fas fa-link',
+    icon: 'Link',
     category: 'basic',
     description: 'Anchor link',
     defaultProps: {
@@ -114,22 +114,23 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
   {
     type: 'container',
     name: 'Container',
-    icon: 'fas fa-square-full',
+    icon: 'Square',
     category: 'layout',
     description: 'Wrapper element',
     defaultProps: {
-      className: 'p-4 border border-gray-200 rounded-lg'
+      className: 'p-4 border border-gray-200 rounded-lg min-h-24'
     },
     defaultStyles: {
       padding: '16px',
       border: '1px solid #E5E7EB',
-      borderRadius: '8px'
+      borderRadius: '8px',
+      minHeight: '96px'
     }
   },
   {
     type: 'grid',
     name: 'Grid',
-    icon: 'fas fa-th',
+    icon: 'Grid3X3',
     category: 'layout',
     description: 'CSS Grid layout',
     defaultProps: {
@@ -141,24 +142,26 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
       display: 'grid',
       gridTemplateColumns: 'repeat(2, 1fr)',
       gap: '16px',
-      padding: '16px'
+      padding: '16px',
+      minHeight: '128px'
     }
   },
   {
     type: 'flexbox',
     name: 'Flexbox',
-    icon: 'fas fa-arrows-alt-h',
+    icon: 'ArrowLeftRight',
     category: 'layout',
     description: 'Flexible layout',
     defaultProps: {
       direction: 'row',
-      className: 'flex gap-4 p-4 border border-gray-300 rounded-lg'
+      className: 'flex gap-4 p-4 border border-gray-300 rounded-lg min-h-24'
     },
     defaultStyles: {
       display: 'flex',
       flexDirection: 'row',
       gap: '16px',
-      padding: '16px'
+      padding: '16px',
+      minHeight: '96px'
     }
   },
   
@@ -166,21 +169,22 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
   {
     type: 'form',
     name: 'Form',
-    icon: 'fas fa-wpforms',
+    icon: 'FileText',
     category: 'form',
     description: 'Form wrapper',
     defaultProps: {
       method: 'post',
-      className: 'space-y-4 p-4 border border-gray-300 rounded-lg'
+      className: 'space-y-4 p-4 border border-gray-300 rounded-lg min-h-24'
     },
     defaultStyles: {
-      padding: '16px'
+      padding: '16px',
+      minHeight: '96px'
     }
   },
   {
     type: 'select',
     name: 'Select',
-    icon: 'fas fa-list',
+    icon: 'List',
     category: 'form',
     description: 'Dropdown select',
     defaultProps: {
@@ -196,7 +200,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
   {
     type: 'checkbox',
     name: 'Checkbox',
-    icon: 'fas fa-check-square',
+    icon: 'CheckSquare',
     category: 'form',
     description: 'Boolean input',
     defaultProps: {
@@ -208,7 +212,7 @@ export const COMPONENT_DEFINITIONS: ComponentDefinition[] = [
   {
     type: 'textarea',
     name: 'Textarea',
-    icon: 'fas fa-align-left',
+    icon: 'AlignLeft',
     category: 'form',
     description: 'Multi-line text',
     defaultProps: {
