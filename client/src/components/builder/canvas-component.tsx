@@ -87,19 +87,9 @@ export function CanvasComponent({
     const { type, props, styles } = component;
     const combinedStyles = {
       ...styles,
-      // Only apply positioning for root-level components, not nested ones
-      ...(component.position && !isNestedComponent(component) && {
-        position: 'relative' as const,
-        left: `${component.position.x}px`,
-        top: `${component.position.y}px`
-      })
+      // Remove absolute positioning to fix alignment issues
+      // Let components flow naturally in their containers
     };
-    
-    function isNestedComponent(comp: Component): boolean {
-      // Check if this component has a parent by checking if it's not in the root components list
-      // This is a simple check - in a more complex app you'd track parent relationships
-      return false; // For now, let all components flow naturally
-    }
 
     switch (type) {
       case 'heading':

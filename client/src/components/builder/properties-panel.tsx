@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Component } from '@shared/schema';
 import { getComponentDefinition } from '@/lib/component-types';
+import { ImageUpload } from './image-upload';
 import { Trash2, Copy, ChevronDown, ChevronRight } from 'lucide-react';
 
 interface PropertiesPanelProps {

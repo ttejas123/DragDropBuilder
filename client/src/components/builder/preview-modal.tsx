@@ -83,7 +83,7 @@ function PreviewComponent({ component }: { component: Component }) {
           className={props.className}
           style={styles}
         >
-          {component.children?.map((child) => (
+          {component.children?.map((child: Component) => (
             <PreviewComponent key={child.id} component={child} />
           ))}
         </div>
@@ -101,7 +101,7 @@ function PreviewComponent({ component }: { component: Component }) {
             gap: props.gap || '16px'
           }}
         >
-          {component.children?.map((child) => (
+          {component.children?.map((child: Component) => (
             <PreviewComponent key={child.id} component={child} />
           ))}
         </div>
@@ -118,7 +118,7 @@ function PreviewComponent({ component }: { component: Component }) {
             gap: props.gap || '16px'
           }}
         >
-          {component.children?.map((child) => (
+          {component.children?.map((child: Component) => (
             <PreviewComponent key={child.id} component={child} />
           ))}
         </div>
@@ -131,7 +131,7 @@ function PreviewComponent({ component }: { component: Component }) {
           style={styles}
           onSubmit={(e) => e.preventDefault()}
         >
-          {component.children?.map((child) => (
+          {component.children?.map((child: Component) => (
             <PreviewComponent key={child.id} component={child} />
           ))}
         </form>

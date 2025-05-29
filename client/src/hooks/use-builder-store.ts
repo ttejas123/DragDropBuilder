@@ -190,7 +190,7 @@ function removeComponentFromTree(components: Component[], id: string): Component
     .filter(component => component.id !== id)
     .map(component => ({
       ...component,
-      children: component.children ? removeComponentFromTree(component.children, id) : undefined
+      children: component.children ? removeComponentFromTree(component.children, id) : component.children
     }));
 }
 
