@@ -183,7 +183,7 @@ export function ComponentPalette() {
 
             {/* Form Components */}
             {formComponents.length > 0 && (
-              <div>
+              <div className="mb-6">
                 <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
                   Forms
                 </h3>
@@ -197,6 +197,66 @@ export function ComponentPalette() {
                         description={component.description}
                       />
                     </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Data Display Components */}
+            {dataComponents.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
+                  Data Display
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {dataComponents.map((component) => (
+                    <DraggableComponent
+                      key={component.type}
+                      type={component.type}
+                      name={component.name}
+                      icon={component.icon}
+                      description={component.description}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Feedback Components */}
+            {feedbackComponents.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
+                  Feedback
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {feedbackComponents.map((component) => (
+                    <DraggableComponent
+                      key={component.type}
+                      type={component.type}
+                      name={component.name}
+                      icon={component.icon}
+                      description={component.description}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Navigation Components */}
+            {navigationComponents.length > 0 && (
+              <div className="mb-6">
+                <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
+                  Navigation
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {navigationComponents.map((component) => (
+                    <DraggableComponent
+                      key={component.type}
+                      type={component.type}
+                      name={component.name}
+                      icon={component.icon}
+                      description={component.description}
+                    />
                   ))}
                 </div>
               </div>
