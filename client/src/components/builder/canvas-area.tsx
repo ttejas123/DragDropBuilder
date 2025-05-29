@@ -1,11 +1,12 @@
 import { useDrop } from 'react-dnd';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Component, ComponentType } from '@shared/schema';
 import { DragItemTypes, getDropPosition } from '@/lib/drag-drop-utils';
 import { CanvasComponent } from './canvas-component';
+import { PreviewModal } from './preview-modal';
 import { Undo, Redo, ZoomIn, ZoomOut, Eye, Smartphone, Tablet, Monitor } from 'lucide-react';
 
 interface CanvasAreaProps {
@@ -28,6 +29,9 @@ export function CanvasArea({
   onMoveComponent
 }: CanvasAreaProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
+  const [viewport, setViewport] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [zoom, setZoom] = useState(100);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const [{ isOver, canDrop }, drop] = useDrop(() => ({
     accept: [DragItemTypes.COMPONENT, DragItemTypes.CANVAS_COMPONENT],
@@ -56,6 +60,33 @@ export function CanvasArea({
     }
   };
 
+  const handleZoomIn = () => {
+    setZoom(prev => Math.min(prev + 25, 200));
+  };
+
+  const handleZoomOut = () => {
+    setZoom(prev => Math.max(prev - 25, 25));
+  };
+
+  const handlePreview = () => {
+    setIsPreviewOpen(true);
+  };
+
+  const getCanvasSize = () => {
+    switch (viewport) {
+      case 'mobile':
+        return { width: 375, height: 667 };
+      case 'tablet':
+        return { width: 768, height: 1024 };
+      default:
+        return { width: 1200, height: 800 };
+    }
+  };
+
+  const canvasSize = getCanvasSize();
+  const scaledWidth = (canvasSize.width * zoom) / 100;
+  const scaledHeight = (canvasSize.height * zoom) / 100;
+
   return (
     <div className="flex-1 flex flex-col bg-gray-100">
       {/* Canvas Toolbar */}
@@ -64,7 +95,7 @@ export function CanvasArea({
           <span className="text-sm font-medium text-gray-700">Canvas</span>
           
           {/* Viewport selector */}
-          <Select defaultValue="desktop">
+          <Select value={viewport} onValueChange={(value: 'desktop' | 'tablet' | 'mobile') => setViewport(value)}>
             <SelectTrigger className="w-32">
               <SelectValue />
             </SelectTrigger>
@@ -103,17 +134,17 @@ export function CanvasArea({
 
         <div className="flex items-center space-x-2">
           <span className="text-sm text-gray-600">Zoom:</span>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={handleZoomOut} disabled={zoom <= 25}>
             <ZoomOut className="w-4 h-4" />
           </Button>
-          <span className="text-sm text-gray-600 px-2">100%</span>
-          <Button variant="ghost" size="sm">
+          <span className="text-sm text-gray-600 px-2 min-w-12 text-center">{zoom}%</span>
+          <Button variant="ghost" size="sm" onClick={handleZoomIn} disabled={zoom >= 200}>
             <ZoomIn className="w-4 h-4" />
           </Button>
           
           <div className="h-4 w-px bg-gray-300 mx-2" />
           
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handlePreview}>
             <Eye className="w-4 h-4 mr-2" />
             Preview
           </Button>
@@ -122,15 +153,18 @@ export function CanvasArea({
 
       {/* Canvas Content */}
       <div className="flex-1 p-8 overflow-auto">
-        <div className="max-w-4xl mx-auto">
+        <div className="flex items-center justify-center min-h-full">
           <Card
-            ref={(node) => {
-              canvasRef.current = node;
-              drop(node);
-            }}
-            className={`min-h-96 p-6 relative transition-all ${
+            ref={drop}
+            className={`p-6 relative transition-all ${
               isOver && canDrop ? 'ring-2 ring-primary ring-offset-2 bg-blue-50' : 'bg-white'
             }`}
+            style={{
+              width: `${scaledWidth}px`,
+              height: `${scaledHeight}px`,
+              transform: `scale(${zoom / 100})`,
+              transformOrigin: 'top left',
+            }}
             onClick={handleCanvasClick}
           >
             {/* Drop zone indicator */}
@@ -174,6 +208,13 @@ export function CanvasArea({
           </Card>
         </div>
       </div>
+      
+      {/* Preview Modal */}
+      <PreviewModal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        components={components}
+      />
     </div>
   );
 }
