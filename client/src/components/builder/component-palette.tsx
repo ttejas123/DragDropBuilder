@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { COMPONENT_DEFINITIONS, getComponentsByCategory } from '@/lib/component-types';
 import { DragItemTypes } from '@/lib/drag-drop-utils';
 import { useState } from 'react';
-import { Search, Type, AlignLeft, MousePointer, Edit3, Image, Link, Square, Grid3X3, ArrowLeftRight, FileText, List, CheckSquare } from 'lucide-react';
+import { Search, Type, AlignLeft, MousePointer, Edit3, Image, Link, Square, Grid3X3, ArrowLeftRight, FileText, List, CheckSquare, CreditCard, Award, Tag, User, Table, AlertTriangle, TrendingUp, Star, ChevronRight, MoreHorizontal, Folder, Minus, ChevronDown, ToggleLeft, Sliders } from 'lucide-react';
 
 interface DraggableComponentProps {
   type: string;
@@ -37,6 +37,21 @@ function DraggableComponent({ type, name, icon, description }: DraggableComponen
     'FileText': FileText,
     'List': List,
     'CheckSquare': CheckSquare,
+    'CreditCard': CreditCard,
+    'Award': Award,
+    'Tag': Tag,
+    'User': User,
+    'Table': Table,
+    'AlertTriangle': AlertTriangle,
+    'TrendingUp': TrendingUp,
+    'Star': Star,
+    'ChevronRight': ChevronRight,
+    'MoreHorizontal': MoreHorizontal,
+    'Folder': Folder,
+    'Minus': Minus,
+    'ChevronDown': ChevronDown,
+    'ToggleLeft': ToggleLeft,
+    'Sliders': Sliders,
   }[icon] || Square;
 
   return (
@@ -61,7 +76,7 @@ function DraggableComponent({ type, name, icon, description }: DraggableComponen
 
 export function ComponentPalette() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeCategory, setActiveCategory] = useState<'all' | 'basic' | 'layout' | 'form'>('all');
+  const [activeCategory, setActiveCategory] = useState<'all' | 'basic' | 'layout' | 'form' | 'data' | 'feedback' | 'navigation'>('all');
 
   const filteredComponents = COMPONENT_DEFINITIONS.filter(component => {
     const matchesSearch = component.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -77,6 +92,15 @@ export function ComponentPalette() {
     c.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
   const formComponents = getComponentsByCategory('form').filter(c => 
+    c.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  const dataComponents = getComponentsByCategory('data').filter(c => 
+    c.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  const feedbackComponents = getComponentsByCategory('feedback').filter(c => 
+    c.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  const navigationComponents = getComponentsByCategory('navigation').filter(c => 
     c.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -99,7 +123,7 @@ export function ComponentPalette() {
 
         {/* Category filters */}
         <div className="flex flex-wrap gap-1">
-          {(['all', 'basic', 'layout', 'form'] as const).map((category) => (
+          {(['all', 'basic', 'layout', 'form', 'data', 'feedback', 'navigation'] as const).map((category) => (
             <Badge
               key={category}
               variant={activeCategory === category ? "default" : "secondary"}

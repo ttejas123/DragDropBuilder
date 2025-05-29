@@ -34,7 +34,29 @@ export const ComponentTypeSchema = z.enum([
   'select',
   'checkbox',
   'textarea',
-  'link'
+  'link',
+  // Ant Design inspired components
+  'card',
+  'badge',
+  'tag',
+  'alert',
+  'avatar',
+  'breadcrumb',
+  'steps',
+  'table',
+  'list',
+  'divider',
+  'progress',
+  'timeline',
+  'collapse',
+  'tabs',
+  'switch',
+  'slider',
+  'rate',
+  'tooltip',
+  'modal',
+  'drawer',
+  'notification'
 ]);
 
 export const ComponentPropsSchema = z.record(z.any());
