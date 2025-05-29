@@ -156,6 +156,249 @@ export function JsonRenderer({ component }: { component: Component }) {
           />
         );
 
+      // Data Display Components
+      case 'card':
+        return (
+          <div className="border border-gray-200 rounded-lg p-4 shadow-sm bg-white" style={styles}>
+            {props.title && <h3 className="text-lg font-semibold mb-2">{props.title}</h3>}
+            <div>{props.content || 'Card content goes here'}</div>
+            {component.children?.map((child: Component) => (
+              <JsonRenderer key={child.id} component={child} />
+            ))}
+          </div>
+        );
+
+      case 'badge':
+        return (
+          <span 
+            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+            style={styles}
+          >
+            {props.content || 'Badge'}
+          </span>
+        );
+
+      case 'tag':
+        return (
+          <span 
+            className="inline-flex items-center px-2 py-1 rounded text-sm bg-gray-100 text-gray-800"
+            style={styles}
+          >
+            {props.content || 'Tag'}
+            {props.closable && <button className="ml-1 text-gray-500 hover:text-gray-700">×</button>}
+          </span>
+        );
+
+      case 'avatar':
+        return (
+          <div className="w-10 h-10 rounded-full overflow-hidden" style={styles}>
+            <img 
+              src={props.src || 'https://via.placeholder.com/40x40'} 
+              alt={props.alt || 'Avatar'}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        );
+
+      case 'table':
+        return (
+          <table className="w-full border-collapse border border-gray-300" style={styles}>
+            <thead>
+              <tr>
+                {(props.headers || ['Column 1', 'Column 2']).map((header: string, index: number) => (
+                  <th key={index} className="border border-gray-300 px-4 py-2 bg-gray-50">
+                    {header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {(props.rows || [['Data 1', 'Data 2']]).map((row: string[], rowIndex: number) => (
+                <tr key={rowIndex}>
+                  {row.map((cell, cellIndex) => (
+                    <td key={cellIndex} className="border border-gray-300 px-4 py-2">
+                      {cell}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        );
+
+      case 'list':
+        const ListTag = props.type === 'ordered' ? 'ol' : 'ul';
+        return (
+          <ListTag className="space-y-2" style={styles}>
+            {(props.items || ['Item 1', 'Item 2']).map((item: string, index: number) => (
+              <li key={index} className="text-gray-700">{item}</li>
+            ))}
+          </ListTag>
+        );
+
+      // Feedback Components
+      case 'alert':
+        const alertColors = {
+          info: 'bg-blue-50 border-blue-200 text-blue-800',
+          success: 'bg-green-50 border-green-200 text-green-800',
+          warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+          error: 'bg-red-50 border-red-200 text-red-800'
+        };
+        return (
+          <div 
+            className={`p-4 rounded-lg border ${alertColors[props.type as keyof typeof alertColors] || alertColors.info}`}
+            style={styles}
+          >
+            {props.showIcon && <span className="mr-2">ℹ️</span>}
+            {props.message || 'This is an alert message'}
+          </div>
+        );
+
+      case 'progress':
+        return (
+          <div className="w-full" style={styles}>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${props.percentage || 60}%` }}
+              ></div>
+            </div>
+            {props.showText && (
+              <div className="text-sm text-gray-600 mt-1">{props.percentage || 60}%</div>
+            )}
+          </div>
+        );
+
+      case 'rate':
+        return (
+          <div className="flex space-x-1" style={styles}>
+            {Array.from({ length: props.count || 5 }, (_, index) => (
+              <span 
+                key={index}
+                className={`text-lg ${index < (props.value || 3) ? 'text-yellow-400' : 'text-gray-300'}`}
+              >
+                ⭐
+              </span>
+            ))}
+          </div>
+        );
+
+      // Navigation Components
+      case 'breadcrumb':
+        return (
+          <nav className="flex items-center space-x-2 text-sm text-gray-600" style={styles}>
+            {(props.items || ['Home', 'Page']).map((item: string, index: number, array: string[]) => (
+              <span key={index} className="flex items-center">
+                <span className="hover:text-blue-600 cursor-pointer">{item}</span>
+                {index < array.length - 1 && (
+                  <span className="mx-2 text-gray-400">{props.separator || '/'}</span>
+                )}
+              </span>
+            ))}
+          </nav>
+        );
+
+      case 'steps':
+        return (
+          <div className="flex items-center justify-between" style={styles}>
+            {(props.steps || ['Step 1', 'Step 2']).map((step: string, index: number) => (
+              <div key={index} className="flex items-center">
+                <div 
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                    index <= (props.current || 0) ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'
+                  }`}
+                >
+                  {index + 1}
+                </div>
+                <span className="ml-2 text-sm text-gray-700">{step}</span>
+                {index < (props.steps || []).length - 1 && (
+                  <div className="w-8 h-0.5 bg-gray-300 mx-4"></div>
+                )}
+              </div>
+            ))}
+          </div>
+        );
+
+      case 'tabs':
+        return (
+          <div className="w-full" style={styles}>
+            <div className="border-b border-gray-200">
+              <nav className="flex space-x-8">
+                {(props.items || [{ key: '1', label: 'Tab 1', content: 'Content 1' }]).map((tab: any) => (
+                  <button
+                    key={tab.key}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                      tab.key === (props.activeKey || '1')
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </nav>
+            </div>
+            <div className="mt-4">
+              {(props.items || [{ key: '1', content: 'Content 1' }]).find((tab: any) => tab.key === (props.activeKey || '1'))?.content}
+            </div>
+          </div>
+        );
+
+      // Layout Components (Additional)
+      case 'divider':
+        return props.orientation === 'vertical' ? (
+          <div className="border-l border-gray-300 h-8 mx-4" style={styles}>
+            {props.text && <span className="text-sm text-gray-500">{props.text}</span>}
+          </div>
+        ) : (
+          <div className="border-t border-gray-300 my-4 relative" style={styles}>
+            {props.text && (
+              <span className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-2 text-sm text-gray-500">
+                {props.text}
+              </span>
+            )}
+          </div>
+        );
+
+      case 'collapse':
+        return (
+          <div className="border border-gray-200 rounded-lg" style={styles}>
+            <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50">
+              <span className="font-medium">{props.title || 'Panel Title'}</span>
+              <span>▼</span>
+            </div>
+            {props.defaultExpanded && (
+              <div className="p-4 border-t border-gray-200">
+                {props.content || 'Panel content goes here'}
+              </div>
+            )}
+          </div>
+        );
+
+      // Form Components (Additional)
+      case 'switch':
+        return (
+          <label className="flex items-center space-x-2" style={styles}>
+            <div className={`relative inline-flex h-6 w-11 items-center rounded-full ${props.checked ? 'bg-blue-600' : 'bg-gray-200'}`}>
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${props.checked ? 'translate-x-6' : 'translate-x-1'}`} />
+            </div>
+            <span>{props.label || 'Switch'}</span>
+          </label>
+        );
+
+      case 'slider':
+        return (
+          <div className="w-full" style={styles}>
+            <input
+              type="range"
+              min={props.min || 0}
+              max={props.max || 100}
+              defaultValue={props.value || 50}
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+        );
+
       default:
         return (
           <div className="p-4 border border-gray-300 rounded-lg bg-gray-50" style={styles}>
