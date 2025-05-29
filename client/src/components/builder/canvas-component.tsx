@@ -94,9 +94,21 @@ export function CanvasComponent({
     switch (type) {
       case 'heading':
         const HeadingTag = (props.tag || 'h2') as keyof JSX.IntrinsicElements;
+        const getHeadingSize = (tag: string): string => {
+          switch (tag) {
+            case 'h1': return 'text-4xl';
+            case 'h2': return 'text-3xl';
+            case 'h3': return 'text-2xl';
+            case 'h4': return 'text-xl';
+            case 'h5': return 'text-lg';
+            case 'h6': return 'text-base';
+            default: return 'text-2xl';
+          }
+        };
+        
         return (
           <HeadingTag 
-            className={props.className}
+            className={`${getHeadingSize(props.tag)} font-semibold ${props.className || ''}`}
             style={combinedStyles}
           >
             {props.content || 'Heading'}

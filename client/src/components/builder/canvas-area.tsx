@@ -6,7 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Component, ComponentType } from '@shared/schema';
 import { DragItemTypes, getDropPosition } from '@/lib/drag-drop-utils';
 import { CanvasComponent } from './canvas-component';
-import { PreviewModal } from './preview-modal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { JsonTreeRenderer } from './json-renderer';
 import { Undo, Redo, ZoomIn, ZoomOut, Eye, Smartphone, Tablet, Monitor } from 'lucide-react';
 
 interface CanvasAreaProps {
@@ -210,11 +211,26 @@ export function CanvasArea({
       </div>
       
       {/* Preview Modal */}
-      <PreviewModal
-        isOpen={isPreviewOpen}
-        onClose={() => setIsPreviewOpen(false)}
-        components={components}
-      />
+      <Dialog open={isPreviewOpen} onOpenChange={() => setIsPreviewOpen(false)}>
+        <DialogContent className="max-w-4xl w-full h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Preview</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto p-4 bg-gray-50 rounded-lg">
+            {components.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">
+                <Eye className="w-16 h-16 mx-auto mb-4" />
+                <p className="text-lg font-medium mb-2">No components to preview</p>
+                <p className="text-sm">Add some components to see the preview</p>
+              </div>
+            ) : (
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <JsonTreeRenderer components={components} />
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
