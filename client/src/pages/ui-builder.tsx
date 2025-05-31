@@ -10,6 +10,7 @@ import { ExportModal } from '@/components/builder/export-modal';
 import { Save, Download, Eye, Settings } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { UIBuilderLogo } from '@/components/builder/logo';
 
 export default function UIBuilder() {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -72,8 +73,8 @@ export default function UIBuilder() {
         <header className="bg-card border-b border-border px-4 py-3 flex items-center justify-between shadow-sm">
           <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <i className="fas fa-cube text-white text-sm" />
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+                <UIBuilderLogo size={32} />
               </div>
               <h1 className="text-lg font-semibold text-foreground">UI Builder</h1>
             </div>

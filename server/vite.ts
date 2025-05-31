@@ -24,6 +24,7 @@ export async function setupVite(app: Express, server: Server) {
     middlewareMode: true,
     hmr: { server },
     allowedHosts: true,
+    base: '/client/',
   };
 
   const vite = await createViteServer({
@@ -36,12 +37,19 @@ export async function setupVite(app: Express, server: Server) {
         process.exit(1);
       },
     },
-    server: serverOptions,
-    appType: "custom",
+    server: {
+      ...serverOptions,
+      allowedHosts: true
+    },
+    appType: "custom", 
   });
 
-  app.use(vite.middlewares);
-  app.use("*", async (req, res, next) => {
+  app.get("/", (req, res) => {
+    res.redirect("/client/");
+  });
+
+  app.use('/client', vite.middlewares);
+  app.use("/client/*", async (req, res, next) => {
     const url = req.originalUrl;
 
     try {
