@@ -66,11 +66,11 @@ export function ExportModal({ isOpen, onClose, jsonData }: ExportModalProps) {
         <div className="space-y-4">
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-foreground">
                 Component Tree JSON
               </label>
               <div className="flex items-center space-x-2">
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-muted-foreground">
                   {jsonString.length} characters
                 </span>
               </div>
@@ -79,14 +79,14 @@ export function ExportModal({ isOpen, onClose, jsonData }: ExportModalProps) {
             <Textarea
               value={jsonString}
               readOnly
-              className="w-full h-64 text-sm font-mono bg-gray-50 border border-gray-200 rounded-md resize-none"
+              className="w-full h-64 text-sm font-mono bg-muted/50 border border-input rounded-md resize-none"
               placeholder="No components to export"
             />
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <h4 className="text-sm font-medium text-blue-900 mb-1">Usage Instructions</h4>
-            <p className="text-xs text-blue-700">
+          <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 dark:bg-blue-500/5">
+            <h4 className="text-sm font-medium text-foreground mb-1">Usage Instructions</h4>
+            <p className="text-xs text-muted-foreground">
               This JSON structure contains your complete component tree with properties, styles, and data bindings. 
               Use it with a compatible renderer to recreate your UI.
             </p>

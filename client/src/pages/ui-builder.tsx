@@ -9,6 +9,7 @@ import { PropertiesPanel } from '@/components/builder/properties-panel';
 import { ExportModal } from '@/components/builder/export-modal';
 import { Save, Download, Eye, Settings } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function UIBuilder() {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -66,18 +67,18 @@ export default function UIBuilder() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="h-screen flex flex-col bg-gray-50">
+      <div className="h-screen flex flex-col bg-background">
         {/* Header */}
-        <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shadow-sm">
+        <header className="bg-card border-b border-border px-4 py-3 flex items-center justify-between shadow-sm">
           <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <i className="fas fa-cube text-white text-sm" />
               </div>
-              <h1 className="text-lg font-semibold text-gray-900">UI Builder</h1>
+              <h1 className="text-lg font-semibold text-foreground">UI Builder</h1>
             </div>
             
-            <div className="h-6 w-px bg-gray-300" />
+            <div className="h-6 w-px bg-border" />
             
             <div className="flex items-center space-x-2">
               <Button variant="outline" size="sm" onClick={handleClear}>
@@ -92,10 +93,11 @@ export default function UIBuilder() {
               <Save className="w-4 h-4 mr-2" />
               Save
             </Button>
-            <Button onClick={handleExport} className="bg-accent hover:bg-orange-600">
+            <Button onClick={handleExport} className="bg-accent hover:bg-accent/90">
               <Download className="w-4 h-4 mr-2" />
               Export JSON
             </Button>
+            <ThemeToggle />
             <Button variant="outline" size="sm">
               <Settings className="w-4 h-4" />
             </Button>

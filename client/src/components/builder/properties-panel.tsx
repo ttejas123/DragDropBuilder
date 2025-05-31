@@ -52,7 +52,7 @@ export function PropertiesPanel({
       <div key={component.id}>
         <div
           className={`flex items-center py-1 px-2 rounded text-sm cursor-pointer transition-colors ${
-            isSelected ? 'bg-blue-50 border border-blue-200 text-blue-700' : 'hover:bg-gray-100 text-gray-700'
+            isSelected ? 'bg-primary/10 border border-primary/20 text-primary' : 'hover:bg-muted text-foreground'
           }`}
           style={{ paddingLeft: `${8 + level * 16}px` }}
           onClick={() => onSelectComponent(component.id)}
@@ -63,7 +63,7 @@ export function PropertiesPanel({
                 e.stopPropagation();
                 toggleTreeItem(component.id);
               }}
-              className="mr-1 p-0.5 hover:bg-gray-200 rounded"
+              className="mr-1 p-0.5 hover:bg-muted rounded"
             >
               {isExpanded ? (
                 <ChevronDown className="w-3 h-3" />
@@ -76,21 +76,21 @@ export function PropertiesPanel({
           )}
           
           <i className={`${definition?.icon || 'fas fa-square'} text-xs mr-2 ${
-            isSelected ? 'text-blue-500' : 'text-gray-500'
+            isSelected ? 'text-primary' : 'text-muted-foreground'
           }`} />
           
           <span className={`flex-1 ${isSelected ? 'font-medium' : ''}`}>
             {definition?.name || component.type}
           </span>
           
-          <span className="text-xs text-gray-400 ml-auto">
+          <span className="text-xs text-muted-foreground ml-auto">
             #{component.id.split('-')[0]}
           </span>
         </div>
         
         {hasChildren && isExpanded && (
           <div>
-            {component.children!.map((child) => renderTreeItem(child, level + 1))}
+            {component.children!.map((child: Component) => renderTreeItem(child, level + 1))}
           </div>
         )}
       </div>
@@ -110,7 +110,7 @@ export function PropertiesPanel({
   };
 
   return (
-    <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
+    <div className="w-80 bg-background border-l border-border flex flex-col">
       <Tabs defaultValue="properties" className="flex-1 flex flex-col">
         {/* Tabs Header */}
         <TabsList className="grid w-full grid-cols-3 rounded-none border-b">
@@ -126,7 +126,7 @@ export function PropertiesPanel({
               {/* Component Info */}
               <Card className="p-3">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-semibold text-gray-900">Selected Component</h3>
+                  <h3 className="text-sm font-semibold text-foreground">Selected Component</h3>
                   <div className="flex space-x-1">
                     <Button
                       size="sm"
@@ -145,14 +145,14 @@ export function PropertiesPanel({
                   </div>
                 </div>
                 
-                <div className="bg-gray-50 rounded p-2">
+                <div className="bg-muted rounded p-2">
                   <div className="flex items-center space-x-2 mb-1">
                     <i className={`${getComponentDefinition(selectedComponent.type)?.icon || 'fas fa-square'} text-primary text-sm`} />
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className="text-sm font-medium text-foreground">
                       {getComponentDefinition(selectedComponent.type)?.name || selectedComponent.type}
                     </span>
                   </div>
-                  <div className="text-xs text-gray-500">ID: {selectedComponent.id}</div>
+                  <div className="text-xs text-muted-foreground">ID: {selectedComponent.id}</div>
                 </div>
               </Card>
 
@@ -164,7 +164,7 @@ export function PropertiesPanel({
                     id="component-id"
                     value={selectedComponent.id}
                     readOnly
-                    className="mt-1 text-sm bg-gray-50"
+                    className="mt-1 text-sm bg-muted"
                   />
                 </div>
 
@@ -310,7 +310,7 @@ export function PropertiesPanel({
               </div>
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-400">
+            <div className="text-center py-8 text-muted-foreground">
               <i className="fas fa-mouse-pointer text-2xl mb-3 block" />
               <p className="text-sm">Select a component to edit its properties</p>
             </div>
@@ -321,12 +321,12 @@ export function PropertiesPanel({
         <TabsContent value="styles" className="flex-1 overflow-y-auto m-0 p-4">
           {selectedComponent ? (
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4">Styling</h3>
+              <h3 className="text-sm font-semibold text-foreground mb-4">Styling</h3>
               
               {/* Typography styles for text components */}
               {['heading', 'paragraph', 'button', 'link'].includes(selectedComponent.type) && (
                 <div className="space-y-3">
-                  <h4 className="text-sm font-medium text-gray-700">Typography</h4>
+                  <h4 className="text-sm font-medium text-foreground">Typography</h4>
                   
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -381,7 +381,7 @@ export function PropertiesPanel({
 
               {/* Layout styles */}
               <div className="space-y-3">
-                <h4 className="text-sm font-medium text-gray-700">Layout</h4>
+                <h4 className="text-sm font-medium text-foreground">Layout</h4>
                 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -432,7 +432,7 @@ export function PropertiesPanel({
 
               {/* Background and Border */}
               <div className="space-y-3">
-                <h4 className="text-sm font-medium text-gray-700">Background & Border</h4>
+                <h4 className="text-sm font-medium text-foreground">Background & Border</h4>
                 
                 <div>
                   <Label htmlFor="bg-color" className="text-xs text-gray-600">Background Color</Label>
@@ -477,7 +477,7 @@ export function PropertiesPanel({
               </div>
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-400">
+            <div className="text-center py-8 text-muted-foreground">
               <i className="fas fa-palette text-2xl mb-3 block" />
               <p className="text-sm">Select a component to edit its styles</p>
             </div>
@@ -487,14 +487,14 @@ export function PropertiesPanel({
         {/* Tree Tab */}
         <TabsContent value="tree" className="flex-1 overflow-y-auto m-0 p-4">
           <div className="space-y-1">
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">Component Tree</h3>
+            <h3 className="text-sm font-semibold text-foreground mb-3">Component Tree</h3>
             
             {components.length > 0 ? (
               <div className="space-y-1">
                 {components.map((component) => renderTreeItem(component))}
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-400">
+              <div className="text-center py-8 text-muted-foreground">
                 <i className="fas fa-sitemap text-2xl mb-3 block" />
                 <p className="text-sm">No components yet</p>
                 <p className="text-xs mt-1">Add components to see the tree structure</p>

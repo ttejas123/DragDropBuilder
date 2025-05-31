@@ -57,18 +57,18 @@ function DraggableComponent({ type, name, icon, description }: DraggableComponen
   return (
     <div
       ref={drag}
-      className={`group cursor-move p-3 border border-gray-200 rounded-lg hover:border-primary hover:shadow-sm transition-all bg-white ${
+      className={`group cursor-move p-3 border border-input rounded-lg hover:border-primary hover:shadow-sm transition-all bg-background ${
         isDragging ? 'opacity-50' : ''
       }`}
     >
       <div className="flex flex-col items-center text-center">
-        <div className="w-8 h-8 bg-blue-100 rounded-md flex items-center justify-center mb-2 group-hover:bg-blue-200 transition-colors">
-          <IconComponent className="w-4 h-4 text-blue-600" />
+        <div className="w-8 h-8 bg-primary/10 rounded-md flex items-center justify-center mb-2 group-hover:bg-primary/20 transition-colors">
+          <IconComponent className="w-4 h-4 text-primary" />
         </div>
-        <span className="text-xs font-medium text-gray-900 group-hover:text-primary transition-colors">
+        <span className="text-xs font-medium text-foreground group-hover:text-primary transition-colors">
           {name}
         </span>
-        <span className="text-xs text-gray-500 mt-0.5">{description}</span>
+        <span className="text-xs text-muted-foreground mt-0.5">{description}</span>
       </div>
     </div>
   );
@@ -105,14 +105,14 @@ export function ComponentPalette() {
   );
 
   return (
-    <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
+    <div className="w-80 bg-background border-r border-border flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
-        <h2 className="text-sm font-semibold text-gray-900 mb-3">Components</h2>
+      <div className="p-4 border-b border-border">
+        <h2 className="text-sm font-semibold text-foreground mb-3">Components</h2>
         
         {/* Search */}
         <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <Input
             placeholder="Search components..."
             value={searchTerm}
@@ -143,7 +143,7 @@ export function ComponentPalette() {
             {/* Basic Components */}
             {basicComponents.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
+                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
                   Basic Elements
                 </h3>
                 <div className="grid grid-cols-2 gap-2">
@@ -163,7 +163,7 @@ export function ComponentPalette() {
             {/* Layout Components */}
             {layoutComponents.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
+                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
                   Layout
                 </h3>
                 <div className="space-y-2">
@@ -184,7 +184,7 @@ export function ComponentPalette() {
             {/* Form Components */}
             {formComponents.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
+                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
                   Forms
                 </h3>
                 <div className="space-y-2">
@@ -205,7 +205,7 @@ export function ComponentPalette() {
             {/* Data Display Components */}
             {dataComponents.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
+                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
                   Data Display
                 </h3>
                 <div className="grid grid-cols-2 gap-2">
@@ -225,7 +225,7 @@ export function ComponentPalette() {
             {/* Feedback Components */}
             {feedbackComponents.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
+                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
                   Feedback
                 </h3>
                 <div className="grid grid-cols-2 gap-2">
@@ -245,7 +245,7 @@ export function ComponentPalette() {
             {/* Navigation Components */}
             {navigationComponents.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">
+                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
                   Navigation
                 </h3>
                 <div className="grid grid-cols-2 gap-2">
@@ -277,7 +277,7 @@ export function ComponentPalette() {
         )}
 
         {filteredComponents.length === 0 && (
-          <div className="text-center py-8 text-gray-400">
+          <div className="text-center py-8 text-muted-foreground">
             <Search className="w-8 h-8 mx-auto mb-2" />
             <p className="text-sm">No components found</p>
           </div>

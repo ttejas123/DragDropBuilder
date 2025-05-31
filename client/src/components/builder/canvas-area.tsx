@@ -89,11 +89,11 @@ export function CanvasArea({
   const scaledHeight = (canvasSize.height * zoom) / 100;
 
   return (
-    <div className="flex-1 flex flex-col bg-gray-100">
+    <div className="flex-1 flex flex-col bg-muted/50">
       {/* Canvas Toolbar */}
-      <div className="bg-white border-b border-gray-200 p-3 flex items-center justify-between">
+      <div className="bg-background border-b border-border p-3 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <span className="text-sm font-medium text-gray-700">Canvas</span>
+          <span className="text-sm font-medium text-foreground">Canvas</span>
           
           {/* Viewport selector */}
           <Select value={viewport} onValueChange={(value: 'desktop' | 'tablet' | 'mobile') => setViewport(value)}>
@@ -122,7 +122,7 @@ export function CanvasArea({
             </SelectContent>
           </Select>
 
-          <div className="h-4 w-px bg-gray-300" />
+          <div className="h-4 w-px bg-border" />
           
           {/* Undo/Redo */}
           <Button variant="ghost" size="sm" disabled>
@@ -134,16 +134,16 @@ export function CanvasArea({
         </div>
 
         <div className="flex items-center space-x-2">
-          <span className="text-sm text-gray-600">Zoom:</span>
+          <span className="text-sm text-muted-foreground">Zoom:</span>
           <Button variant="ghost" size="sm" onClick={handleZoomOut} disabled={zoom <= 25}>
             <ZoomOut className="w-4 h-4" />
           </Button>
-          <span className="text-sm text-gray-600 px-2 min-w-12 text-center">{zoom}%</span>
+          <span className="text-sm text-muted-foreground px-2 min-w-12 text-center">{zoom}%</span>
           <Button variant="ghost" size="sm" onClick={handleZoomIn} disabled={zoom >= 200}>
             <ZoomIn className="w-4 h-4" />
           </Button>
           
-          <div className="h-4 w-px bg-gray-300 mx-2" />
+          <div className="h-4 w-px bg-border mx-2" />
           
           <Button variant="outline" size="sm" onClick={handlePreview}>
             <Eye className="w-4 h-4 mr-2" />
@@ -158,7 +158,7 @@ export function CanvasArea({
           <Card
             ref={drop}
             className={`p-6 relative transition-all ${
-              isOver && canDrop ? 'ring-2 ring-primary ring-offset-2 bg-blue-50' : 'bg-white'
+              isOver && canDrop ? 'ring-2 ring-primary ring-offset-2 bg-primary/5' : 'bg-background'
             }`}
             style={{
               width: `${scaledWidth}px`,
@@ -170,9 +170,9 @@ export function CanvasArea({
           >
             {/* Drop zone indicator */}
             {components.length === 0 && (
-              <div className="absolute inset-0 flex items-center justify-center text-gray-400 pointer-events-none">
+              <div className="absolute inset-0 flex items-center justify-center text-muted-foreground pointer-events-none">
                 <div className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
                     <i className="fas fa-plus-circle text-2xl" />
                   </div>
                   <p className="text-lg font-medium mb-2">Drop components here to start building</p>
@@ -199,7 +199,7 @@ export function CanvasArea({
 
             {/* Drop zone overlay */}
             {isOver && canDrop && (
-              <div className="absolute inset-0 border-2 border-dashed border-primary rounded-lg flex items-center justify-center bg-blue-50 bg-opacity-50 pointer-events-none">
+              <div className="absolute inset-0 border-2 border-dashed border-primary rounded-lg flex items-center justify-center bg-primary/5 pointer-events-none">
                 <div className="text-center">
                   <i className="fas fa-plus-circle text-4xl text-primary mb-2" />
                   <p className="text-primary font-medium">Drop component here</p>
@@ -216,15 +216,15 @@ export function CanvasArea({
           <DialogHeader>
             <DialogTitle>Preview</DialogTitle>
           </DialogHeader>
-          <div className="flex-1 overflow-auto p-4 bg-gray-50 rounded-lg">
+          <div className="flex-1 overflow-auto p-4 bg-muted rounded-lg">
             {components.length === 0 ? (
-              <div className="text-center py-12 text-gray-400">
+              <div className="text-center py-12 text-muted-foreground">
                 <Eye className="w-16 h-16 mx-auto mb-4" />
                 <p className="text-lg font-medium mb-2">No components to preview</p>
                 <p className="text-sm">Add some components to see the preview</p>
               </div>
             ) : (
-              <div className="bg-white p-6 rounded-lg shadow-sm">
+              <div className="bg-background p-6 rounded-lg shadow-sm">
                 <JsonTreeRenderer components={components} />
               </div>
             )}
