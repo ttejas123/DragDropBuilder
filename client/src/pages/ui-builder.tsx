@@ -84,10 +84,6 @@ export default function UIBuilder() {
                 <i className="fas fa-trash mr-2 text-sm" />
                 Clear
               </Button>
-              <Button variant="outline" size="sm" onClick={handlePreview}>
-                <Eye className="w-4 h-4 mr-2" />
-                Preview
-              </Button>
             </div>
           </div>
           
