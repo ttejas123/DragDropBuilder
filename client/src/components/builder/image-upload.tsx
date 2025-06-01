@@ -3,13 +3,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Upload, Link as LinkIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ImageUploadProps {
   currentSrc: string;
   onImageChange: (src: string) => void;
+  className?: string;
 }
 
-export function ImageUpload({ currentSrc, onImageChange }: ImageUploadProps) {
+export function ImageUpload({ currentSrc, onImageChange, className }: ImageUploadProps) {
   const [uploadMethod, setUploadMethod] = useState<'url' | 'file'>('url');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -30,7 +32,7 @@ export function ImageUpload({ currentSrc, onImageChange }: ImageUploadProps) {
   };
 
   return (
-    <div className="space-y-3">
+    <div className={cn("space-y-3", className)}>
       <Label className="text-sm font-medium">Image Source</Label>
       
       {/* Method selector */}

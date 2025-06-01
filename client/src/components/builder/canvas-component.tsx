@@ -1,9 +1,11 @@
+import React from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { Component, ComponentType } from '@shared/schema';
-import { DragItemTypes, getDropPosition } from '@/lib/drag-drop-utils';
-import { Trash2, Copy } from 'lucide-react';
+import { DragItemTypes } from '@/lib/drag-drop-utils';
+import { createComponent } from '@/lib/component-implementations';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { useRef } from 'react';
+import { Copy, Trash2 } from 'lucide-react';
 
 interface CanvasComponentProps {
   component: Component;
@@ -11,26 +13,23 @@ interface CanvasComponentProps {
   onSelect: (id: string) => void;
   onDelete: (id: string) => void;
   onDuplicate: (id: string) => void;
-  onUpdatePosition: (id: string, position: { x: number; y: number }) => void;
   onAddComponent: (type: ComponentType, position?: { x: number; y: number }, parentId?: string) => void;
 }
 
-// Drop zone component for containers
-function ContainerDropZone({ 
-  component, 
-  onAddComponent, 
-  className, 
-  style, 
-  children 
-}: { 
+// Container Drop Zone Component
+function ContainerDropZone({
+  component,
+  onAddComponent,
+  className,
+  style,
+  children,
+}: {
   component: Component;
   onAddComponent: (type: ComponentType, position?: { x: number; y: number }, parentId?: string) => void;
   className?: string;
   style?: React.CSSProperties;
   children: React.ReactNode;
 }) {
-  const dropRef = useRef<HTMLDivElement>(null);
-  
   const [{ isOver, canDrop }, drop] = useDrop(() => ({
     accept: [DragItemTypes.COMPONENT, DragItemTypes.CANVAS_COMPONENT],
     drop: (item: { type: string; id?: string }, monitor) => {
@@ -53,10 +52,22 @@ function ContainerDropZone({
   return (
     <div
       ref={drop}
-      className={`${className} ${isOver && canDrop ? 'ring-2 ring-blue-400 ring-offset-1' : ''}`}
+      className={cn(
+        className,
+        isOver && canDrop && 'ring-2 ring-primary ring-offset-2 bg-primary/5'
+      )}
       style={style}
     >
       {children}
+      {isOver && canDrop && (
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-2 border-2 border-dashed border-primary rounded-lg flex items-center justify-center">
+            <div className="bg-primary/10 px-3 py-1.5 rounded-md">
+              <span className="text-sm text-primary font-medium">Drop here</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -67,8 +78,7 @@ export function CanvasComponent({
   onSelect,
   onDelete,
   onDuplicate,
-  onUpdatePosition,
-  onAddComponent
+  onAddComponent,
 }: CanvasComponentProps) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: DragItemTypes.CANVAS_COMPONENT,
@@ -83,197 +93,37 @@ export function CanvasComponent({
     onSelect(component.id);
   };
 
-  const renderComponent = () => {
-    const { type, props, styles } = component;
-    const combinedStyles = {
-      ...styles,
-      // Remove absolute positioning to fix alignment issues
-      // Let components flow naturally in their containers
-    };
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete(component.id);
+  };
 
-    switch (type) {
-      case 'heading':
-        const HeadingTag = (props.tag || 'h2') as keyof JSX.IntrinsicElements;
-        const getHeadingSize = (tag: string): string => {
-          switch (tag) {
-            case 'h1': return 'text-4xl';
-            case 'h2': return 'text-3xl';
-            case 'h3': return 'text-2xl';
-            case 'h4': return 'text-xl';
-            case 'h5': return 'text-lg';
-            case 'h6': return 'text-base';
-            default: return 'text-2xl';
-          }
-        };
-        
-        return (
-          <HeadingTag 
-            className={`${getHeadingSize(props.tag)} font-semibold ${props.className || ''}`}
-            style={combinedStyles}
-          >
-            {props.content || 'Heading'}
-          </HeadingTag>
-        );
+  const handleDuplicate = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDuplicate(component.id);
+  };
 
-      case 'paragraph':
-        return (
-          <p 
-            className={props.className}
-            style={combinedStyles}
-          >
-            {props.content || 'Paragraph text'}
-          </p>
-        );
+  // Special handling for container-type components (grid, container, etc.)
+  const isContainerType = ['container', 'grid'].includes(component.type);
+  const hasChildren = component.children && component.children.length > 0;
 
-      case 'button':
-        return (
-          <button 
-            className={props.className}
-            style={combinedStyles}
-            type="button"
-          >
-            {props.content || 'Button'}
-          </button>
-        );
-
-      case 'input':
-        return (
-          <input
-            type={props.type || 'text'}
-            placeholder={props.placeholder}
-            className={props.className}
-            style={combinedStyles}
-          />
-        );
-
-      case 'image':
-        return (
-          <img
-            src={props.src || 'https://via.placeholder.com/300x200'}
-            alt={props.alt || 'Image'}
-            className={props.className}
-            style={combinedStyles}
-          />
-        );
-
-      case 'link':
-        return (
-          <a
-            href={props.href || '#'}
-            className={props.className}
-            style={combinedStyles}
-          >
-            {props.content || 'Link'}
-          </a>
-        );
-
-      case 'container':
-        return (
-          <ContainerDropZone 
-            component={component}
-            onAddComponent={onAddComponent}
-            className={props.className}
-            style={combinedStyles}
-          >
-            {component.children?.map((child: Component) => (
-              <CanvasComponent
-                key={child.id}
-                component={child}
-                isSelected={false}
-                onSelect={onSelect}
-                onDelete={onDelete}
-                onDuplicate={onDuplicate}
-                onUpdatePosition={onUpdatePosition}
-                onAddComponent={onAddComponent}
-              />
-            ))}
-            {(!component.children || component.children.length === 0) && (
-              <div className="text-center py-4 text-gray-400 text-sm">
-                Container - Drop components here
-              </div>
-            )}
-          </ContainerDropZone>
-        );
-
-      case 'grid':
-        const gridCols = props.columns || 2;
-        return (
-          <ContainerDropZone 
-            component={component}
-            onAddComponent={onAddComponent}
-            className={props.className}
-            style={{
-              ...combinedStyles,
-              display: 'grid',
-              gridTemplateColumns: `repeat(${gridCols}, 1fr)`,
-              gap: props.gap || '16px'
-            }}
-          >
-            {component.children?.map((child: Component) => (
-              <CanvasComponent
-                key={child.id}
-                component={child}
-                isSelected={false}
-                onSelect={onSelect}
-                onDelete={onDelete}
-                onDuplicate={onDuplicate}
-                onUpdatePosition={onUpdatePosition}
-                onAddComponent={onAddComponent}
-              />
-            ))}
-            {Array.from({ length: Math.max(0, gridCols - (component.children?.length || 0)) }).map((_, i) => (
-              <div
-                key={`empty-${i}`}
-                className="min-h-16 border border-gray-200 rounded bg-gray-50 flex items-center justify-center text-gray-400 text-sm"
-              >
-                Drop content here
-              </div>
-            ))}
-          </ContainerDropZone>
-        );
-
-      case 'flexbox':
-        return (
-          <ContainerDropZone 
-            component={component}
-            onAddComponent={onAddComponent}
-            className={props.className}
-            style={{
-              ...combinedStyles,
-              display: 'flex',
-              flexDirection: props.direction || 'row',
-              gap: props.gap || '16px'
-            }}
-          >
-            {component.children?.map((child: Component) => (
-              <CanvasComponent
-                key={child.id}
-                component={child}
-                isSelected={false}
-                onSelect={onSelect}
-                onDelete={onDelete}
-                onDuplicate={onDuplicate}
-                onUpdatePosition={onUpdatePosition}
-                onAddComponent={onAddComponent}
-              />
-            ))}
-            {(!component.children || component.children.length === 0) && (
-              <div className="text-center py-4 text-gray-400 text-sm">
-                Flexbox - Drop components here
-              </div>
-            )}
-          </ContainerDropZone>
-        );
-
-      case 'form':
-        return (
-          <ContainerDropZone 
-            component={component}
-            onAddComponent={onAddComponent}
-            className={props.className}
-            style={combinedStyles}
-          >
-            <form onSubmit={(e) => e.preventDefault()}>
+  const renderContent = () => {
+    if (isContainerType) {
+      return (
+        <ContainerDropZone
+          component={component}
+          onAddComponent={onAddComponent}
+          className={cn(
+            'relative min-h-[100px] transition-all',
+            !hasChildren && 'border-2 border-dashed border-border'
+          )}
+          style={component.styles}
+        >
+          {hasChildren ? (
+            <div className={cn(
+              'grid gap-4',
+              component.type === 'grid' && `grid-cols-${component.props.columns || 2}`
+            )}>
               {component.children?.map((child: Component) => (
                 <CanvasComponent
                   key={child.id}
@@ -282,100 +132,64 @@ export function CanvasComponent({
                   onSelect={onSelect}
                   onDelete={onDelete}
                   onDuplicate={onDuplicate}
-                  onUpdatePosition={onUpdatePosition}
                   onAddComponent={onAddComponent}
                 />
               ))}
-              {(!component.children || component.children.length === 0) && (
-                <div className="text-center py-4 text-gray-400 text-sm">
-                  Form - Drop form elements here
-                </div>
-              )}
-            </form>
-          </ContainerDropZone>
-        );
-
-      case 'select':
-        return (
-          <select
-            className={props.className}
-            style={combinedStyles}
-          >
-            {(props.options || ['Option 1', 'Option 2']).map((option: string, index: number) => (
-              <option key={index} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        );
-
-      case 'checkbox':
-        return (
-          <label className={props.className} style={combinedStyles}>
-            <input type="checkbox" className="mr-2" />
-            {props.label || 'Checkbox'}
-          </label>
-        );
-
-      case 'textarea':
-        return (
-          <textarea
-            placeholder={props.placeholder}
-            rows={props.rows || 3}
-            className={props.className}
-            style={combinedStyles}
-          />
-        );
-
-      default:
-        return (
-          <div 
-            className="p-4 border border-gray-300 rounded-lg bg-gray-50"
-            style={combinedStyles}
-          >
-            <span className="text-gray-600">{type} Component</span>
-          </div>
-        );
+            </div>
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+              <span className="text-sm">Drop components here</span>
+            </div>
+          )}
+        </ContainerDropZone>
+      );
     }
+
+    return createComponent(component, {
+      className: cn(
+        'relative cursor-move transition-all',
+        isSelected && 'outline-none',
+        component.props.className
+      ),
+    });
   };
 
   return (
     <div
       ref={drag}
-      className={`relative group transition-all ${
-        isSelected ? 'ring-2 ring-primary ring-offset-2' : ''
-      } ${isDragging ? 'opacity-50' : ''}`}
+      className={cn(
+        'relative group',
+        isDragging && 'opacity-50',
+        isSelected && 'ring-2 ring-primary ring-offset-2'
+      )}
       onClick={handleClick}
     >
-      {renderComponent()}
-      
-      {/* Component controls */}
-      {isSelected && (
-        <div className="absolute -top-2 -right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button
-            size="sm"
-            variant="outline"
-            className="w-6 h-6 p-0 bg-white"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDuplicate(component.id);
-            }}
-          >
-            <Copy className="w-3 h-3" />
-          </Button>
-          <Button
-            size="sm"
-            variant="destructive"
-            className="w-6 h-6 p-0"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete(component.id);
-            }}
-          >
-            <Trash2 className="w-3 h-3" />
-          </Button>
-        </div>
-      )}
+      {/* Component Controls */}
+      <div className={cn(
+        'absolute -top-2 -right-2 flex items-center space-x-1 opacity-0 transition-opacity z-10',
+        (isSelected || isDragging) && 'opacity-100',
+        'group-hover:opacity-100'
+      )}>
+        <Button
+          size="icon"
+          variant="outline"
+          className="h-6 w-6"
+          onClick={handleDuplicate}
+        >
+          <Copy className="h-3 w-3" />
+        </Button>
+        <Button
+          size="icon"
+          variant="destructive"
+          className="h-6 w-6"
+          onClick={handleDelete}
+        >
+          <Trash2 className="h-3 w-3" />
+        </Button>
+      </div>
+
+      {/* Component Content */}
+      {renderContent()}
     </div>
   );
 }

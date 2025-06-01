@@ -90,69 +90,70 @@ export function CanvasArea({
 
   return (
     <div className="flex-1 flex flex-col bg-muted/50">
-      {/* Canvas Toolbar */}
-      <div className="bg-background border-b border-border p-3 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <span className="text-sm font-medium text-foreground">Canvas</span>
-          
-          {/* Viewport selector */}
-          <Select value={viewport} onValueChange={(value: 'desktop' | 'tablet' | 'mobile') => setViewport(value)}>
-            <SelectTrigger className="w-32">
+      {/* Toolbar */}
+      <div className="p-2 flex items-center justify-between border-b bg-background">
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleZoomOut}
+            disabled={zoom <= 25}
+          >
+            <ZoomOut className="h-4 w-4" />
+          </Button>
+          <span className="text-sm tabular-nums">
+            {zoom}%
+          </span>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleZoomIn}
+            disabled={zoom >= 200}
+          >
+            <ZoomIn className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Select
+            value={viewport}
+            onValueChange={(value) => setViewport(value as typeof viewport)}
+          >
+            <SelectTrigger className="w-[180px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="desktop">
-                <div className="flex items-center space-x-2">
-                  <Monitor className="w-4 h-4" />
-                  <span>Desktop</span>
+                <div className="flex items-center">
+                  <Monitor className="w-4 h-4 mr-2" />
+                  Desktop
                 </div>
               </SelectItem>
               <SelectItem value="tablet">
-                <div className="flex items-center space-x-2">
-                  <Tablet className="w-4 h-4" />
-                  <span>Tablet</span>
+                <div className="flex items-center">
+                  <Tablet className="w-4 h-4 mr-2" />
+                  Tablet
                 </div>
               </SelectItem>
               <SelectItem value="mobile">
-                <div className="flex items-center space-x-2">
-                  <Smartphone className="w-4 h-4" />
-                  <span>Mobile</span>
+                <div className="flex items-center">
+                  <Smartphone className="w-4 h-4 mr-2" />
+                  Mobile
                 </div>
               </SelectItem>
             </SelectContent>
           </Select>
 
-          <div className="h-4 w-px bg-border" />
-          
-          {/* Undo/Redo */}
-          <Button variant="ghost" size="sm" disabled>
-            <Undo className="w-4 h-4" />
-          </Button>
-          <Button variant="ghost" size="sm" disabled>
-            <Redo className="w-4 h-4" />
-          </Button>
-        </div>
-
-        <div className="flex items-center space-x-2">
-          <span className="text-sm text-muted-foreground">Zoom:</span>
-          <Button variant="ghost" size="sm" onClick={handleZoomOut} disabled={zoom <= 25}>
-            <ZoomOut className="w-4 h-4" />
-          </Button>
-          <span className="text-sm text-muted-foreground px-2 min-w-12 text-center">{zoom}%</span>
-          <Button variant="ghost" size="sm" onClick={handleZoomIn} disabled={zoom >= 200}>
-            <ZoomIn className="w-4 h-4" />
-          </Button>
-          
-          <div className="h-4 w-px bg-border mx-2" />
-          
-          <Button variant="outline" size="sm" onClick={handlePreview}>
-            <Eye className="w-4 h-4 mr-2" />
-            Preview
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handlePreview}
+          >
+            <Eye className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {/* Canvas Content */}
       <div className="flex-1 p-8 overflow-auto">
         <div className="flex items-center justify-center min-h-full">
           <Card
@@ -191,7 +192,6 @@ export function CanvasArea({
                   onSelect={onSelectComponent}
                   onDelete={onDeleteComponent}
                   onDuplicate={onDuplicateComponent}
-                  onUpdatePosition={onMoveComponent}
                   onAddComponent={onAddComponent}
                 />
               ))}

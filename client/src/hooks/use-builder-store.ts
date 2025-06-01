@@ -1,214 +1,190 @@
-import { useState, useCallback } from 'react';
+import { create } from 'zustand';
 import { Component, ComponentType } from '@shared/schema';
-import { getComponentDefinition, ComponentDefinition } from '@/lib/component-types';
-import { generateComponentId } from '@/lib/drag-drop-utils';
+import { getComponentDefinition, getDefaultProps, getDefaultStyles } from '@/lib/component-registry';
+import { nanoid } from 'nanoid';
 
-interface BuilderState {
+interface BuilderStore {
   components: Component[];
   selectedComponentId: string | null;
-  canvasSize: { width: number; height: number };
+  addComponent: (type: ComponentType, position?: { x: number; y: number }, parentId?: string) => void;
+  updateComponentProps: (id: string, props: Record<string, any>) => void;
+  updateComponentStyles: (id: string, styles: Record<string, string>) => void;
+  deleteComponent: (id: string) => void;
+  selectComponent: (id: string | null) => void;
+  moveComponent: (id: string, position: { x: number; y: number }) => void;
+  duplicateComponent: (id: string) => void;
+  getSelectedComponent: () => Component | null;
+  exportJSON: () => string;
+  clearCanvas: () => void;
 }
 
-export function useBuilderStore() {
-  const [state, setState] = useState<BuilderState>({
-    components: [],
-    selectedComponentId: null,
-    canvasSize: { width: 800, height: 600 }
-  });
-
-  const addComponent = useCallback((type: ComponentType, position?: { x: number; y: number }, parentId?: string) => {
-    const definition = getComponentDefinition(type);
-    if (!definition) return;
-
-    const newComponent: Component = {
-      id: generateComponentId(type),
-      type,
-      props: { ...definition.defaultProps },
-      styles: { ...definition.defaultStyles },
-      position: position || { x: 0, y: 0 },
-      children: []
-    };
-
-    setState(prev => {
-      let updatedComponents;
-      
-      if (parentId) {
-        // Add as child to parent component
-        updatedComponents = prev.components.map(comp => 
-          comp.id === parentId 
-            ? { ...comp, children: [...(comp.children || []), newComponent] }
-            : comp
-        );
-      } else {
-        // Add as root component
-        updatedComponents = [...prev.components, newComponent];
-      }
-
-      return {
-        ...prev,
-        components: updatedComponents,
-        selectedComponentId: newComponent.id
-      };
-    });
-
-    return newComponent.id;
-  }, []);
-
-  const updateComponent = useCallback((id: string, updates: Partial<Component>) => {
-    setState(prev => ({
-      ...prev,
-      components: updateComponentInTree(prev.components, id, updates)
-    }));
-  }, []);
-
-  const updateComponentProps = useCallback((id: string, props: Record<string, any>) => {
-    setState(prev => ({
-      ...prev,
-      components: updateComponentInTree(prev.components, id, { props })
-    }));
-  }, []);
-
-  const updateComponentStyles = useCallback((id: string, styles: Record<string, string>) => {
-    setState(prev => ({
-      ...prev,
-      components: updateComponentInTree(prev.components, id, { styles })
-    }));
-  }, []);
-
-  const deleteComponent = useCallback((id: string) => {
-    setState(prev => ({
-      ...prev,
-      components: removeComponentFromTree(prev.components, id),
-      selectedComponentId: prev.selectedComponentId === id ? null : prev.selectedComponentId
-    }));
-  }, []);
-
-  const selectComponent = useCallback((id: string | null) => {
-    setState(prev => ({
-      ...prev,
-      selectedComponentId: id
-    }));
-  }, []);
-
-  const moveComponent = useCallback((id: string, newPosition: { x: number; y: number }) => {
-    setState(prev => ({
-      ...prev,
-      components: updateComponentInTree(prev.components, id, { position: newPosition })
-    }));
-  }, []);
-
-  const duplicateComponent = useCallback((id: string) => {
-    const component = findComponentInTree(state.components, id);
-    if (!component) return;
-
-    const duplicated = duplicateComponentRecursive(component);
-    setState(prev => ({
-      ...prev,
-      components: [...prev.components, duplicated],
-      selectedComponentId: duplicated.id
-    }));
-  }, [state.components]);
-
-  const getSelectedComponent = useCallback(() => {
-    if (!state.selectedComponentId) return null;
-    return findComponentInTree(state.components, state.selectedComponentId);
-  }, [state.components, state.selectedComponentId]);
-
-  const exportJSON = useCallback(() => {
-    return {
-      version: "1.0",
-      components: state.components,
-      metadata: {
-        created: new Date().toISOString(),
-        canvasSize: state.canvasSize
-      }
-    };
-  }, [state.components, state.canvasSize]);
-
-  const importJSON = useCallback((data: any) => {
-    if (data.components && Array.isArray(data.components)) {
-      setState(prev => ({
-        ...prev,
-        components: data.components,
-        selectedComponentId: null
-      }));
-    }
-  }, []);
-
-  const clearCanvas = useCallback(() => {
-    setState(prev => ({
-      ...prev,
-      components: [],
-      selectedComponentId: null
-    }));
-  }, []);
-
-  return {
-    // State
-    components: state.components,
-    selectedComponentId: state.selectedComponentId,
-    canvasSize: state.canvasSize,
-    
-    // Actions
-    addComponent,
-    updateComponent,
-    updateComponentProps,
-    updateComponentStyles,
-    deleteComponent,
-    selectComponent,
-    moveComponent,
-    duplicateComponent,
-    
-    // Computed
-    getSelectedComponent,
-    
-    // Import/Export
-    exportJSON,
-    importJSON,
-    clearCanvas
-  };
-}
-
-// Helper functions
-function updateComponentInTree(components: Component[], id: string, updates: Partial<Component>): Component[] {
+// Helper function to add a component to a parent's children array
+const addComponentToParent = (components: Component[], parentId: string, newComponent: Component): Component[] => {
   return components.map(component => {
-    if (component.id === id) {
-      return { ...component, ...updates };
+    if (component.id === parentId) {
+      return {
+        ...component,
+        children: [...(component.children || []), newComponent]
+      };
     }
     if (component.children) {
       return {
         ...component,
-        children: updateComponentInTree(component.children, id, updates)
+        children: addComponentToParent(component.children, parentId, newComponent)
       };
     }
     return component;
   });
-}
+};
 
-function removeComponentFromTree(components: Component[], id: string): Component[] {
-  return components
-    .filter(component => component.id !== id)
-    .map(component => ({
-      ...component,
-      children: component.children ? removeComponentFromTree(component.children, id) : component.children
+export const useBuilderStore = create<BuilderStore>((set, get) => ({
+  components: [],
+  selectedComponentId: null,
+
+  addComponent: (type, position, parentId) => {
+    const definition = getComponentDefinition(type);
+    if (!definition) return;
+
+    const newComponent: Component = {
+      id: nanoid(),
+      type,
+      props: {
+        ...getDefaultProps(type),
+        ...(position && !parentId && { style: `position: absolute; left: ${position.x}px; top: ${position.y}px;` }),
+      },
+      styles: getDefaultStyles(type),
+      children: [],
+    };
+
+    set((state) => {
+      if (parentId) {
+        // Add component as a child of the specified parent
+        return {
+          components: addComponentToParent(state.components, parentId, newComponent),
+          selectedComponentId: newComponent.id,
+        };
+      } else {
+        // Add component to the root level
+        return {
+          components: [...state.components, newComponent],
+          selectedComponentId: newComponent.id,
+        };
+      }
+    });
+  },
+
+  updateComponentProps: (id, props) => {
+    set((state) => ({
+      components: state.components.map((component) =>
+        component.id === id ? { ...component, props } : component
+      ),
     }));
-}
+  },
 
-function findComponentInTree(components: Component[], id: string): Component | null {
-  for (const component of components) {
-    if (component.id === id) return component;
-    if (component.children) {
-      const found = findComponentInTree(component.children, id);
-      if (found) return found;
-    }
-  }
-  return null;
-}
+  updateComponentStyles: (id, styles) => {
+    set((state) => ({
+      components: state.components.map((component) =>
+        component.id === id ? { ...component, styles } : component
+      ),
+    }));
+  },
 
-function duplicateComponentRecursive(component: Component): Component {
-  return {
-    ...component,
-    id: generateComponentId(component.type),
-    children: component.children?.map(duplicateComponentRecursive)
-  };
-}
+  deleteComponent: (id) => {
+    const deleteComponentRecursive = (components: Component[]): Component[] => {
+      return components.filter(component => {
+        if (component.id === id) return false;
+        if (component.children) {
+          component.children = deleteComponentRecursive(component.children);
+        }
+        return true;
+      });
+    };
+
+    set((state) => ({
+      components: deleteComponentRecursive(state.components),
+      selectedComponentId: state.selectedComponentId === id ? null : state.selectedComponentId,
+    }));
+  },
+
+  selectComponent: (id) => {
+    set({ selectedComponentId: id });
+  },
+
+  moveComponent: (id, position) => {
+    const moveComponentRecursive = (components: Component[]): Component[] => {
+      return components.map(component => {
+        if (component.id === id) {
+          return {
+            ...component,
+            props: {
+              ...component.props,
+              style: `position: absolute; left: ${position.x}px; top: ${position.y}px;`,
+            },
+          };
+        }
+        if (component.children) {
+          return {
+            ...component,
+            children: moveComponentRecursive(component.children),
+          };
+        }
+        return component;
+      });
+    };
+
+    set((state) => ({
+      components: moveComponentRecursive(state.components),
+    }));
+  },
+
+  duplicateComponent: (id) => {
+    const component = get().components.find((c) => c.id === id);
+    if (!component) return;
+
+    const duplicatedComponent: Component = {
+      ...component,
+      id: nanoid(),
+      props: {
+        ...component.props,
+        style: component.props.style?.replace(
+          /left: (\d+)px/,
+          (_: string, x: string) => `left: ${parseInt(x) + 20}px`
+        ).replace(
+          /top: (\d+)px/,
+          (_: string, y: string) => `top: ${parseInt(y) + 20}px`
+        ),
+      },
+    };
+
+    set((state) => ({
+      components: [...state.components, duplicatedComponent],
+      selectedComponentId: duplicatedComponent.id,
+    }));
+  },
+
+  getSelectedComponent: () => {
+    const { components, selectedComponentId } = get();
+    if (!selectedComponentId) return null;
+
+    const findComponentRecursive = (components: Component[]): Component | null => {
+      for (const component of components) {
+        if (component.id === selectedComponentId) return component;
+        if (component.children) {
+          const found = findComponentRecursive(component.children);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+
+    return findComponentRecursive(components);
+  },
+
+  exportJSON: () => {
+    return JSON.stringify(get().components, null, 2);
+  },
+
+  clearCanvas: () => {
+    set({ components: [], selectedComponentId: null });
+  },
+}));

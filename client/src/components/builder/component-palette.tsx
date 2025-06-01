@@ -2,57 +2,25 @@ import { useDrag } from 'react-dnd';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { COMPONENT_DEFINITIONS, getComponentsByCategory } from '@/lib/component-types';
 import { DragItemTypes } from '@/lib/drag-drop-utils';
 import { useState } from 'react';
-import { Search, Type, AlignLeft, MousePointer, Edit3, Image, Link, Square, Grid3X3, ArrowLeftRight, FileText, List, CheckSquare, CreditCard, Award, Tag, User, Table, AlertTriangle, TrendingUp, Star, ChevronRight, MoreHorizontal, Folder, Minus, ChevronDown, ToggleLeft, Sliders } from 'lucide-react';
+import { Search } from 'lucide-react';
+import { ComponentDefinition, componentRegistry, getComponentsByCategory } from '@/lib/component-registry';
 
 interface DraggableComponentProps {
-  type: string;
-  name: string;
-  icon: string;
-  description: string;
+  component: ComponentDefinition;
 }
 
-function DraggableComponent({ type, name, icon, description }: DraggableComponentProps) {
+function DraggableComponent({ component }: DraggableComponentProps) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: DragItemTypes.COMPONENT,
-    item: { type },
+    item: { type: component.type },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
   }));
 
-  // Map icon names to actual Lucide components
-  const IconComponent = {
-    'Type': Type,
-    'AlignLeft': AlignLeft,
-    'MousePointer': MousePointer,
-    'Edit3': Edit3,
-    'Image': Image,
-    'Link': Link,
-    'Square': Square,
-    'Grid3X3': Grid3X3,
-    'ArrowLeftRight': ArrowLeftRight,
-    'FileText': FileText,
-    'List': List,
-    'CheckSquare': CheckSquare,
-    'CreditCard': CreditCard,
-    'Award': Award,
-    'Tag': Tag,
-    'User': User,
-    'Table': Table,
-    'AlertTriangle': AlertTriangle,
-    'TrendingUp': TrendingUp,
-    'Star': Star,
-    'ChevronRight': ChevronRight,
-    'MoreHorizontal': MoreHorizontal,
-    'Folder': Folder,
-    'Minus': Minus,
-    'ChevronDown': ChevronDown,
-    'ToggleLeft': ToggleLeft,
-    'Sliders': Sliders,
-  }[icon] || Square;
+  const Icon = component.icon;
 
   return (
     <div
@@ -63,12 +31,12 @@ function DraggableComponent({ type, name, icon, description }: DraggableComponen
     >
       <div className="flex flex-col items-center text-center">
         <div className="w-8 h-8 bg-primary/10 rounded-md flex items-center justify-center mb-2 group-hover:bg-primary/20 transition-colors">
-          <IconComponent className="w-4 h-4 text-primary" />
+          <Icon className="w-4 h-4 text-primary" />
         </div>
         <span className="text-xs font-medium text-foreground group-hover:text-primary transition-colors">
-          {name}
+          {component.name}
         </span>
-        <span className="text-xs text-muted-foreground mt-0.5">{description}</span>
+        <span className="text-xs text-muted-foreground mt-0.5">{component.description}</span>
       </div>
     </div>
   );
@@ -78,7 +46,7 @@ export function ComponentPalette() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState<'all' | 'basic' | 'layout' | 'form' | 'data' | 'feedback' | 'navigation'>('all');
 
-  const filteredComponents = COMPONENT_DEFINITIONS.filter(component => {
+  const filteredComponents = Object.values(componentRegistry).filter(component => {
     const matchesSearch = component.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          component.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = activeCategory === 'all' || component.category === activeCategory;
@@ -150,10 +118,7 @@ export function ComponentPalette() {
                   {basicComponents.map((component) => (
                     <DraggableComponent
                       key={component.type}
-                      type={component.type}
-                      name={component.name}
-                      icon={component.icon}
-                      description={component.description}
+                      component={component}
                     />
                   ))}
                 </div>
@@ -170,10 +135,7 @@ export function ComponentPalette() {
                   {layoutComponents.map((component) => (
                     <Card key={component.type} className="p-3 hover:border-primary cursor-move transition-colors">
                       <DraggableComponent
-                        type={component.type}
-                        name={component.name}
-                        icon={component.icon}
-                        description={component.description}
+                        component={component}
                       />
                     </Card>
                   ))}
@@ -191,10 +153,7 @@ export function ComponentPalette() {
                   {formComponents.map((component) => (
                     <Card key={component.type} className="p-3 hover:border-primary cursor-move transition-colors">
                       <DraggableComponent
-                        type={component.type}
-                        name={component.name}
-                        icon={component.icon}
-                        description={component.description}
+                        component={component}
                       />
                     </Card>
                   ))}
@@ -212,10 +171,7 @@ export function ComponentPalette() {
                   {dataComponents.map((component) => (
                     <DraggableComponent
                       key={component.type}
-                      type={component.type}
-                      name={component.name}
-                      icon={component.icon}
-                      description={component.description}
+                      component={component}
                     />
                   ))}
                 </div>
@@ -232,10 +188,7 @@ export function ComponentPalette() {
                   {feedbackComponents.map((component) => (
                     <DraggableComponent
                       key={component.type}
-                      type={component.type}
-                      name={component.name}
-                      icon={component.icon}
-                      description={component.description}
+                      component={component}
                     />
                   ))}
                 </div>
@@ -252,10 +205,7 @@ export function ComponentPalette() {
                   {navigationComponents.map((component) => (
                     <DraggableComponent
                       key={component.type}
-                      type={component.type}
-                      name={component.name}
-                      icon={component.icon}
-                      description={component.description}
+                      component={component}
                     />
                   ))}
                 </div>
@@ -267,10 +217,7 @@ export function ComponentPalette() {
             {filteredComponents.map((component) => (
               <DraggableComponent
                 key={component.type}
-                type={component.type}
-                name={component.name}
-                icon={component.icon}
-                description={component.description}
+                component={component}
               />
             ))}
           </div>
