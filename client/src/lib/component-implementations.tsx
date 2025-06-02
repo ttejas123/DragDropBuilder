@@ -14,13 +14,12 @@ interface ComponentProps {
 
 // Heading Component
 const Heading: React.FC<ComponentProps> = ({ component, className }) => {
-  const { level = 'h2', content = '' } = component.props;
+  const { level = 'h2', content = '' } = component.ui_template.props;
   const Tag = level as keyof JSX.IntrinsicElements;
-  
   return (
     <Tag 
       className={cn('font-heading', className)} 
-      style={component.styles}
+      style={component.ui_template.style}
     >
       {content}
     </Tag>
@@ -29,12 +28,12 @@ const Heading: React.FC<ComponentProps> = ({ component, className }) => {
 
 // Paragraph Component
 const Paragraph: React.FC<ComponentProps> = ({ component, className }) => {
-  const { content = '' } = component.props;
+  const { content = '' } = component.ui_template.props;
   
   return (
     <p 
       className={cn('leading-relaxed', className)} 
-      style={component.styles}
+      style={component.ui_template.style}
     >
       {content}
     </p>
@@ -43,14 +42,14 @@ const Paragraph: React.FC<ComponentProps> = ({ component, className }) => {
 
 // Button Component
 const ButtonComponent: React.FC<ComponentProps> = ({ component, className }) => {
-  const { content = 'Button', variant = 'default', size = 'default' } = component.props;
+  const { content = 'Button', variant = 'default', size = 'default' } = component.ui_template.props;
   
   return (
     <Button 
       variant={variant}
       size={size}
       className={className}
-      style={component.styles}
+      style={component.ui_template.style}
     >
       {content}
     </Button>
@@ -63,7 +62,7 @@ const InputComponent: React.FC<ComponentProps> = ({ component, className }) => {
     placeholder = 'Enter text...', 
     type = 'text',
     required = false 
-  } = component.props;
+  } = component.ui_template.props;
   
   return (
     <Input
@@ -71,20 +70,20 @@ const InputComponent: React.FC<ComponentProps> = ({ component, className }) => {
       placeholder={placeholder}
       required={required}
       className={className}
-      style={component.styles}
+      style={component.ui_template.style}
     />
   );
 };
 
 // Container Component
 const Container: React.FC<ComponentProps> = ({ component, className, children }) => {
-  const { padding = '1rem' } = component.props;
+  const { padding = '1rem' } = component.ui_template.props;
   
   return (
     <div 
       className={cn('w-full', className)}
       style={{
-        ...component.styles,
+        ...component.ui_template.style,
         padding,
       }}
     >
@@ -103,13 +102,13 @@ const Grid: React.FC<ComponentProps> = ({ component, className, children }) => {
     autoFlow = 'row',
     alignItems = 'start',
     justifyItems = 'stretch',
-  } = component.props;
+  } = component.ui_template.props;
   
   return (
     <div 
       className={cn('grid w-full', className)}
       style={{
-        ...component.styles,
+        ...component.ui_template.style,
         gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
         gap: gap,
         rowGap: rowGap,
@@ -126,13 +125,13 @@ const Grid: React.FC<ComponentProps> = ({ component, className, children }) => {
 
 // Card Component
 const CardComponent: React.FC<ComponentProps> = ({ component, className, children }) => {
-  const { padding = '1rem' } = component.props;
+  const { padding = '1rem' } = component.ui_template.props;
   
   return (
     <Card 
       className={cn('', className)}
       style={{
-        ...component.styles,
+        ...component.ui_template.style,
         padding,
       }}
     >
@@ -143,7 +142,7 @@ const CardComponent: React.FC<ComponentProps> = ({ component, className, childre
 
 // Image Component
 const ImageComponent: React.FC<ComponentProps> = ({ component, className }) => {
-  const { src = '', alt = 'Image', fit = 'cover' } = component.props;
+  const { src = '', alt = 'Image', fit = 'cover' } = component.ui_template.props;
   
   return (
     <img
@@ -151,7 +150,7 @@ const ImageComponent: React.FC<ComponentProps> = ({ component, className }) => {
       alt={alt}
       className={cn('max-w-full h-auto', className)}
       style={{
-        ...component.styles,
+        ...component.ui_template.style,
         objectFit: fit,
       }}
     />
@@ -175,7 +174,7 @@ export function createComponent(
   component: Component,
   props: Omit<ComponentProps, 'component'> = {}
 ) {
-  const Component = componentMap[component.type];
+  const Component = componentMap[component.ui_template.id];
   
   if (!Component) {
     console.warn(`Component type "${component.type}" not found`);
@@ -188,9 +187,9 @@ export function createComponent(
       component={component}
       {...props}
     >
-      {component.children?.map((child: Component) => 
+      {component.components?.map((child: Component) => 
         createComponent(child, {
-          className: cn(props.className, child.props.className)
+          className: cn(props.className, child.ui_template.props?.className)
         })
       )}
     </Component>

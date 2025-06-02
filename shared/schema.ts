@@ -20,7 +20,38 @@ export const insertProjectSchema = createInsertSchema(projects).omit({
 export type InsertProject = z.infer<typeof insertProjectSchema>;
 export type Project = typeof projects.$inferSelect;
 
-// Component definitions for the builder
+// Grid configuration schema
+export const GridSchema = z.object({
+  xs: z.number().optional(),
+  sm: z.number().optional(),
+  md: z.number().optional(),
+  lg: z.number().optional(),
+  xl: z.number().optional(),
+  xxl: z.number().optional(),
+});
+
+// Layout configuration schema
+export const LayoutConfigSchema = z.object({
+  order: z.number(),
+  divider: z.boolean().optional(),
+  visible: z.boolean(),
+});
+
+// API configuration schema
+export const ApiConfigSchema = z.object({
+  url: z.string(),
+  payload: z.array(z.any()),
+  data_keys: z.array(z.string()),
+  method_type: z.string(),
+});
+
+// Context dependency schema
+export const ContextDependencySchema = z.object({
+  key: z.string(),
+  value: z.string(),
+});
+
+// Component type enum
 export const ComponentTypeSchema = z.enum([
   'heading',
   'paragraph', 
@@ -35,7 +66,6 @@ export const ComponentTypeSchema = z.enum([
   'checkbox',
   'textarea',
   'link',
-  // Ant Design inspired components
   'card',
   'badge',
   'tag',
@@ -59,22 +89,66 @@ export const ComponentTypeSchema = z.enum([
   'notification'
 ]);
 
-export const ComponentPropsSchema = z.record(z.any());
+// UI Template schema
+export const UITemplateSchema = z.object({
+  id: ComponentTypeSchema,
+  grid: GridSchema,
+  props: z.record(z.any()).optional(),
+  style: z.record(z.string()).optional(),
+  gutter: z.any().nullable(),
+});
 
-export const ComponentStylesSchema = z.record(z.string());
+export type ComponentType = z.infer<typeof ComponentTypeSchema>;
 
+// Component schema with lazy evaluation for recursive structure
 export const ComponentSchema: z.ZodType<any> = z.lazy(() => z.object({
   id: z.string(),
-  type: ComponentTypeSchema,
-  props: ComponentPropsSchema,
-  styles: ComponentStylesSchema.optional(),
-  dataId: z.string().optional(),
-  children: z.array(ComponentSchema).optional(),
+  // Metadata
+  mf_id: z.string(),
+  data_id: z.string(),
+  
+  // UI Configuration
+  ui_template: UITemplateSchema,
+  
+  // Hierarchy
+  parent_id: z.string().nullable(),
+  
+  // Layout
+  layout_config: LayoutConfigSchema,
+  
+  // API Configuration
+  api: z.array(ApiConfigSchema),
+  
+  // Type
+  type: z.enum(['MODULE', 'FIELD']),
+
   position: z.object({
     x: z.number(),
-    y: z.number()
-  }).optional()
+    y: z.number()  
+  }).optional(),
+  
+  // Dependencies
+  application_context_dependency: z.array(ContextDependencySchema),
+  local_context_dependency: z.array(ContextDependencySchema),
+  
+  // Audit fields
+  created_at: z.string().nullable(),
+  created_by: z.string().nullable(),
+  updated_at: z.string().nullable(),
+  updated_by: z.string().nullable(),
+  deleted_at: z.string().nullable(),
+  deleted_by: z.string().nullable(),
+  remarks: z.string().nullable(),
+  
+  // Child components
+  components: z.array(ComponentSchema).optional(),
 }));
+
+export type Component = z.infer<typeof ComponentSchema>;
+
+// Helper types
+export type ComponentProps = Record<string, any>;
+export type ComponentStyles = Record<string, string>;
 
 export const ComponentTreeSchema = z.object({
   version: z.string(),
@@ -88,6 +162,4 @@ export const ComponentTreeSchema = z.object({
   })
 });
 
-export type ComponentType = z.infer<typeof ComponentTypeSchema>;
-export type Component = z.infer<typeof ComponentSchema>;
 export type ComponentTree = z.infer<typeof ComponentTreeSchema>;

@@ -39,7 +39,7 @@ function ContainerDropZone({
           return;
         } else {
           // Adding new component to container
-          onAddComponent(item.type as ComponentType, undefined, component.id);
+          onAddComponent(item.type as ComponentType, undefined, component.mf_id);
         }
       }
     },
@@ -104,8 +104,8 @@ export function CanvasComponent({
   };
 
   // Special handling for container-type components (grid, container, etc.)
-  const isContainerType = ['container', 'grid'].includes(component.type);
-  const hasChildren = component.children && component.children.length > 0;
+  const isContainerType = ['container', 'grid'].includes(component.ui_template.id);
+  const hasChildren = component.components && component.components.length > 0;
 
   const renderContent = () => {
     if (isContainerType) {
@@ -122,9 +122,9 @@ export function CanvasComponent({
           {hasChildren ? (
             <div className={cn(
               'grid gap-4',
-              component.type === 'grid' && `grid-cols-${component.props.columns || 2}`
+              component.ui_template.id === 'grid' && `grid-cols-${component.ui_template.props.columns || 2}`
             )}>
-              {component.children?.map((child: Component) => (
+              {component.components?.map((child: Component) => (
                 <CanvasComponent
                   key={child.id}
                   component={child}
@@ -144,12 +144,11 @@ export function CanvasComponent({
         </ContainerDropZone>
       );
     }
-
     return createComponent(component, {
       className: cn(
         'relative cursor-move transition-all',
         isSelected && 'outline-none',
-        component.props.className
+        component.ui_template.props?.className
       ),
     });
   };

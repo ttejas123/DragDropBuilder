@@ -19,7 +19,7 @@ export function ExportModal({ isOpen, onClose, jsonData }: ExportModalProps) {
 
   const handleCopyJson = async () => {
     try {
-      await navigator.clipboard.writeText(jsonString);
+      await navigator.clipboard.writeText(JSON.parse(jsonString));
       setCopied(true);
       toast({
         title: "Copied to clipboard",
@@ -37,7 +37,7 @@ export function ExportModal({ isOpen, onClose, jsonData }: ExportModalProps) {
   };
 
   const handleDownloadJson = () => {
-    const blob = new Blob([jsonString], { type: 'application/json' });
+    const blob = new Blob([JSON.parse(jsonString)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -77,7 +77,7 @@ export function ExportModal({ isOpen, onClose, jsonData }: ExportModalProps) {
             </div>
             
             <Textarea
-              value={jsonString}
+              value={JSON.parse(jsonString)}
               readOnly
               className="w-full h-64 text-sm font-mono bg-muted/50 border border-input rounded-md resize-none"
               placeholder="No components to export"

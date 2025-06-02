@@ -186,7 +186,7 @@ export function PropertiesPanel({
   const [expandedTreeItems, setExpandedTreeItems] = useState<Set<string>>(new Set());
   const [expandedStyleCategories, setExpandedStyleCategories] = useState<Set<string>>(new Set(['typography', 'layout', 'spacing', 'colors']));
 
-  const componentDefinition = selectedComponent ? getComponentDefinition(selectedComponent.type) : null;
+  const componentDefinition = selectedComponent ? getComponentDefinition(selectedComponent.ui_template.id) : null;
 
   const toggleTreeItem = (id: string) => {
     const newExpanded = new Set(expandedTreeItems);
@@ -209,10 +209,10 @@ export function PropertiesPanel({
   };
 
   const renderTreeItem = (component: Component, level = 0) => {
-    const hasChildren = component.children && component.children.length > 0;
+    const hasChildren = component.components && component.components.length > 0;
     const isExpanded = expandedTreeItems.has(component.id);
     const isSelected = selectedComponent?.id === component.id;
-    const definition = getComponentDefinition(component.type);
+    const definition = getComponentDefinition(component.ui_template.id);
 
     return (
       <div key={component.id}>
@@ -246,7 +246,7 @@ export function PropertiesPanel({
           }`} />
           
           <span className={`flex-1 ${isSelected ? 'font-medium' : ''}`}>
-            {definition?.name || component.type}
+            {definition?.name || component.ui_template.id}
           </span>
           
           <span className="text-xs text-muted-foreground ml-auto">
@@ -256,7 +256,7 @@ export function PropertiesPanel({
         
         {hasChildren && isExpanded && (
           <div>
-            {component.children!.map((child: Component) => renderTreeItem(child, level + 1))}
+            {component.components!.map((child: Component) => renderTreeItem(child, level + 1))}
           </div>
         )}
       </div>
@@ -308,7 +308,6 @@ export function PropertiesPanel({
                   <div className="text-xs text-muted-foreground">ID: {selectedComponent.id}</div>
                 </div>
               </Card>
-
               {/* Component Properties */}
               {componentDefinition.properties.length > 0 && (
                 <div className="space-y-4">
@@ -321,9 +320,9 @@ export function PropertiesPanel({
                       </Label>
                       <PropertyField
                         property={property}
-                        value={selectedComponent.props[property.name]}
+                        value={selectedComponent.ui_template.props[property.name]}
                         onChange={(value) => onUpdateProps(selectedComponent.id, { 
-                          ...selectedComponent.props, 
+                          ...selectedComponent.ui_template.props, 
                           [property.name]: value 
                         })}
                       />
@@ -379,9 +378,9 @@ export function PropertiesPanel({
                             </Label>
                             <StyleField
                               style={style}
-                              value={selectedComponent.styles[style.name] || ''}
+                              value={selectedComponent.ui_template.style[style.name] || ''}
                               onChange={(value) => onUpdateStyles(selectedComponent.id, {
-                                ...selectedComponent.styles,
+                                ...selectedComponent.ui_template.style,
                                 [style.name]: value,
                               })}
                             />

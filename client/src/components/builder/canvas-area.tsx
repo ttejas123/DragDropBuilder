@@ -30,7 +30,7 @@ export function CanvasArea({
   onMoveComponent
 }: CanvasAreaProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
-  const [viewport, setViewport] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [viewport, setViewport] = useState<'desktop' | 'tablet' | 'mobile'>('mobile');
   const [zoom, setZoom] = useState(100);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
