@@ -4,12 +4,35 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { Component } from '@shared/schema';
+import type { EventHandlerSchema } from '@shared/schema';
+import { z } from 'zod';
 
 // Type for component implementation props
 interface ComponentProps {
   component: Component;
   className?: string;
   children?: React.ReactNode;
+  context?: Record<string, any>; // Add context prop for event handlers
+}
+
+type EventHandler = z.infer<typeof EventHandlerSchema>;
+
+// Helper function to bind events from component definition
+function bindEvents(component: Component, context: Record<string, any> = {}) {
+  const eventHandlers: Record<string, any> = {};
+  
+  component.events?.forEach((event: EventHandler) => {
+    const handlerFn = context[event.handler.key];
+    if (handlerFn) {
+      eventHandlers[event.type] = (...args: any[]) => {
+        // Get dependencies from context if specified
+        const deps = event.dependencies?.map((dep: string) => context[dep]) || [];
+        handlerFn(...args, ...deps);
+      };
+    }
+  });
+
+  return eventHandlers;
 }
 
 // Heading Component
@@ -41,8 +64,9 @@ const Paragraph: React.FC<ComponentProps> = ({ component, className }) => {
 };
 
 // Button Component
-const ButtonComponent: React.FC<ComponentProps> = ({ component, className }) => {
+const ButtonComponent: React.FC<ComponentProps> = ({ component, className, context }) => {
   const { content = 'Button', variant = 'default', size = 'default' } = component.ui_template.props;
+  const eventHandlers = bindEvents(component, context);
   
   return (
     <Button 
@@ -50,6 +74,7 @@ const ButtonComponent: React.FC<ComponentProps> = ({ component, className }) => 
       size={size}
       className={className}
       style={component.ui_template.style}
+      {...eventHandlers}
     >
       {content}
     </Button>
@@ -57,12 +82,13 @@ const ButtonComponent: React.FC<ComponentProps> = ({ component, className }) => 
 };
 
 // Input Component
-const InputComponent: React.FC<ComponentProps> = ({ component, className }) => {
+const InputComponent: React.FC<ComponentProps> = ({ component, className, context }) => {
   const { 
     placeholder = 'Enter text...', 
     type = 'text',
     required = false 
   } = component.ui_template.props;
+  const eventHandlers = bindEvents(component, context);
   
   return (
     <Input
@@ -71,6 +97,7 @@ const InputComponent: React.FC<ComponentProps> = ({ component, className }) => {
       required={required}
       className={className}
       style={component.ui_template.style}
+      {...eventHandlers}
     />
   );
 };
@@ -172,7 +199,7 @@ export const componentMap: Record<string, React.FC<ComponentProps>> = {
 // Component Factory
 export function createComponent(
   component: Component,
-  props: Omit<ComponentProps, 'component'> = {}
+  props: Omit<ComponentProps, 'component'> & { context?: Record<string, any> } = {}
 ) {
   const Component = componentMap[component.ui_template.id];
   
@@ -185,11 +212,13 @@ export function createComponent(
     <Component
       key={component.id}
       component={component}
+      context={props.context}
       {...props}
     >
       {component.components?.map((child: Component) => 
         createComponent(child, {
-          className: cn(props.className, child.ui_template.props?.className)
+          className: cn(props.className, child.ui_template.props?.className),
+          context: props.context
         })
       )}
     </Component>

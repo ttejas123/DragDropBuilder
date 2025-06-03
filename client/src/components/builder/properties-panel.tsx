@@ -7,10 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
-import { Component } from '@shared/schema';
+import { Component, EventHandlerSchema, ContextDependencySchema } from '@shared/schema';
 import { ComponentDefinition, ComponentProperty, ComponentStyle, getComponentDefinition } from '@/lib/component-registry';
 import { ImageUpload } from './image-upload';
-import { Trash2, Copy, ChevronDown, ChevronRight } from 'lucide-react';
+import { Trash2, Copy, ChevronDown, ChevronRight, Plus, X } from 'lucide-react';
+import { z } from 'zod';
+import { PREDEFINED_HANDLERS, HANDLER_CATEGORIES, ContextType } from '@/lib/event-handlers';
+import { EventConfiguration } from '@/components/EventConfiguration';
 
 interface PropertiesPanelProps {
   components: Component[];
@@ -20,6 +23,8 @@ interface PropertiesPanelProps {
   onSelectComponent: (id: string | null) => void;
   onDeleteComponent: (id: string) => void;
   onDuplicateComponent: (id: string) => void;
+  onUpdateEvents: (id: string, events: z.infer<typeof EventHandlerSchema>[]) => void;
+  onUpdateComponent: (id: string, component: Component) => void;
 }
 
 function PropertyField({ 
@@ -181,7 +186,9 @@ export function PropertiesPanel({
   onUpdateStyles,
   onSelectComponent,
   onDeleteComponent,
-  onDuplicateComponent
+  onUpdateEvents,
+  onDuplicateComponent,
+  onUpdateComponent
 }: PropertiesPanelProps) {
   const [expandedTreeItems, setExpandedTreeItems] = useState<Set<string>>(new Set());
   const [expandedStyleCategories, setExpandedStyleCategories] = useState<Set<string>>(new Set(['typography', 'layout', 'spacing', 'colors']));
@@ -263,17 +270,81 @@ export function PropertiesPanel({
     );
   };
 
+  const handleAddEvent = () => {
+    if (!selectedComponent) return;
+
+    // Default empty event configuration
+    const newDependency: z.infer<typeof ContextDependencySchema> = {
+      key: '',
+      value: ''
+    };
+
+    // Add to application context by default
+    const updatedComponent = {
+      ...selectedComponent,
+      application_context_dependency: [
+        ...selectedComponent.application_context_dependency || [],
+        newDependency
+      ]
+    };
+
+    onUpdateComponent(selectedComponent.id, updatedComponent);
+  };
+
+  const handleUpdateEvent = (index: number, updated: {
+    contextType: ContextType;
+    eventType: string;
+    handler: string;
+    propName: string;
+  }) => {
+    if (!selectedComponent) return;
+
+    const newDependency = {
+      key: updated.handler,
+      value: updated.propName
+    };
+
+    const updatedComponent = { ...selectedComponent };
+    
+    const oldAppDeps = updatedComponent.application_context_dependency.filter((_: any, i: number) => i !== index);
+    const oldLocalDeps = updatedComponent.local_context_dependency.filter((_: any, i: number) => i !== index);
+
+    if (updated.contextType === 'application') {
+      updatedComponent.application_context_dependency = [...oldAppDeps, newDependency];
+      updatedComponent.local_context_dependency = oldLocalDeps;
+    } else {
+      updatedComponent.application_context_dependency = oldAppDeps;
+      updatedComponent.local_context_dependency = [...oldLocalDeps, newDependency];
+    }
+
+    onUpdateComponent(selectedComponent.id, updatedComponent);
+  };
+
+  const handleDeleteEvent = (index: number, contextType: ContextType) => {
+    if (!selectedComponent) return;
+
+    const updatedComponent = { ...selectedComponent };
+    
+    if (contextType === 'application') {
+      updatedComponent.application_context_dependency = updatedComponent.application_context_dependency.filter((_: any, i: number) => i !== index);
+    } else {
+      updatedComponent.local_context_dependency = updatedComponent.local_context_dependency.filter((_: any, i: number) => i !== index);
+    }
+
+    onUpdateComponent(selectedComponent.id, updatedComponent);
+  };
+
   return (
-    <div className="w-80 bg-background border-l border-border flex flex-col">
-      <Tabs defaultValue="properties" className="flex-1 flex flex-col">
-        <TabsList className="grid w-full grid-cols-3 rounded-none border-b">
-          <TabsTrigger value="properties" className="text-xs">Properties</TabsTrigger>
-          <TabsTrigger value="styles" className="text-xs">Styles</TabsTrigger>
-          <TabsTrigger value="tree" className="text-xs">Tree</TabsTrigger>
+    <Card className="w-80 h-full flex flex-col">
+      <Tabs defaultValue="props" className="flex-1 flex flex-col h-full">
+        <TabsList className="w-full shrink-0">
+          <TabsTrigger value="props" className="flex-1">Props</TabsTrigger>
+          <TabsTrigger value="styles" className="flex-1">Styles</TabsTrigger>
+          <TabsTrigger value="events" className="flex-1">Events</TabsTrigger>
+          <TabsTrigger value="tree" className="flex-1">Tree</TabsTrigger>
         </TabsList>
 
-        {/* Properties Tab */}
-        <TabsContent value="properties" className="flex-1 overflow-y-auto m-0 p-4">
+        <TabsContent value="props" className="flex-1 overflow-y-auto m-0 p-4">
           {selectedComponent && componentDefinition ? (
             <div className="space-y-6">
               {/* Component Info */}
@@ -418,7 +489,83 @@ export function PropertiesPanel({
             )}
           </div>
         </TabsContent>
+        <TabsContent value="events" className="flex-1 flex flex-col overflow-hidden m-0">
+          {selectedComponent ? (
+            <div className="flex flex-col h-full">
+              <div className="shrink-0 px-4 pt-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-medium">Event Handlers</h3>
+                  <Button variant="outline" size="sm" onClick={handleAddEvent}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Event
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-4 pb-4">
+                <div className="space-y-4">
+                  {/* Application Context Dependencies */}
+                  {selectedComponent.application_context_dependency.map((dependency: z.infer<typeof ContextDependencySchema>, index: number) => (
+                    <div key={`app-${index}`} className="border rounded-lg">
+                      <EventConfiguration
+                        initialValues={{
+                          contextType: 'application',
+                          handler: dependency.key,
+                          propName: dependency.value
+                        }}
+                        onEventConfigured={(updated) => handleUpdateEvent(index, updated)}
+                      />
+                      <div className="flex justify-end p-2 border-t">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteEvent(index, 'application')}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Local Context Dependencies */}
+                  {selectedComponent.local_context_dependency.map((dependency: z.infer<typeof ContextDependencySchema>, index: number) => (
+                    <div key={`local-${index}`} className="border rounded-lg">
+                      <EventConfiguration
+                        initialValues={{
+                          contextType: 'local',
+                          handler: dependency.key,
+                          propName: dependency.value
+                        }}
+                        onEventConfigured={(updated) => handleUpdateEvent(index, updated)}
+                      />
+                      <div className="flex justify-end p-2 border-t">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteEvent(index, 'local')}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {(!selectedComponent.application_context_dependency.length && !selectedComponent.local_context_dependency.length) && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p className="text-sm">No events configured</p>
+                      <p className="text-xs mt-1">Click "Add Event" to create one</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center text-center p-4 text-muted-foreground">
+              <p>Select a component to configure events</p>
+            </div>
+          )}
+        </TabsContent>
       </Tabs>
-    </div>
+    </Card>
   );
 }

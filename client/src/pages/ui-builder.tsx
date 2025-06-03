@@ -11,6 +11,7 @@ import { Save, Download, Eye, Settings } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { UIBuilderLogo } from '@/components/builder/logo';
+import { Component } from '@shared/schema';
 
 export default function UIBuilder() {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -22,13 +23,15 @@ export default function UIBuilder() {
     addComponent,
     updateComponentProps,
     updateComponentStyles,
+    updateComponentEvents,
     deleteComponent,
     selectComponent,
     moveComponent,
     duplicateComponent,
     getSelectedComponent,
     exportJSON,
-    clearCanvas
+    clearCanvas,
+    setComponents
   } = useBuilderStore();
 
   const selectedComponent = getSelectedComponent();
@@ -127,9 +130,28 @@ export default function UIBuilder() {
             selectedComponent={selectedComponent}
             onUpdateProps={updateComponentProps}
             onUpdateStyles={updateComponentStyles}
+            onUpdateEvents={updateComponentEvents}
             onSelectComponent={selectComponent}
             onDeleteComponent={deleteComponent}
             onDuplicateComponent={duplicateComponent}
+            onUpdateComponent={(id, component) => {
+              // Find and update the component in the components array
+              const updateComponentRecursive = (components: Component[]): Component[] => {
+                return components.map(c => {
+                  if (c.id === id) {
+                    return component;
+                  }
+                  if (c.components) {
+                    return {
+                      ...c,
+                      components: updateComponentRecursive(c.components)
+                    };
+                  }
+                  return c;
+                });
+              };
+              setComponents(updateComponentRecursive(components));
+            }}
           />
         </div>
 

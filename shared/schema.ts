@@ -100,6 +100,26 @@ export const UITemplateSchema = z.object({
 
 export type ComponentType = z.infer<typeof ComponentTypeSchema>;
 
+// Event configuration schema
+export const EventHandlerSchema = z.object({
+  type: z.enum([
+    'click',
+    'change',
+    'submit',
+    'focus',
+    'blur',
+    'mouseenter',
+    'mouseleave',
+    'keydown',
+    'keyup'
+  ]),
+  handler: z.object({
+    key: z.string(),
+    value: z.string()
+  }),
+  dependencies: z.array(z.string()).optional()
+});
+
 // Component schema with lazy evaluation for recursive structure
 export const ComponentSchema: z.ZodType<any> = z.lazy(() => z.object({
   id: z.string(),
@@ -126,6 +146,9 @@ export const ComponentSchema: z.ZodType<any> = z.lazy(() => z.object({
     x: z.number(),
     y: z.number()  
   }).optional(),
+  
+  // Event Handlers
+  events: z.array(EventHandlerSchema).optional(),
   
   // Dependencies
   application_context_dependency: z.array(ContextDependencySchema),

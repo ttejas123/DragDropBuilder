@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import { Component, ComponentType } from '@shared/schema';
+import { Component, ComponentType, EventHandlerSchema } from '@shared/schema';
 import { getComponentDefinition, getDefaultProps, getDefaultStyles } from '@/lib/component-registry';
 import { nanoid } from 'nanoid';
+import { z } from 'zod';
 
 interface BuilderStore {
   components: Component[];
@@ -9,6 +10,7 @@ interface BuilderStore {
   addComponent: (type: ComponentType, position?: { x: number; y: number }, parentId?: string) => void;
   updateComponentProps: (id: string, props: Record<string, any>) => void;
   updateComponentStyles: (id: string, styles: Record<string, string>) => void;
+  updateComponentEvents: (id: string, events: z.infer<typeof EventHandlerSchema>[]) => void;
   deleteComponent: (id: string) => void;
   selectComponent: (id: string | null) => void;
   moveComponent: (id: string, position: { x: number; y: number }) => void;
@@ -17,6 +19,7 @@ interface BuilderStore {
   exportJSON: () => string;
   clearCanvas: () => void;
   importComponents: (components: Component[]) => void;
+  setComponents: (components: Component[]) => void;
 }
 
 // Helper function to add a component to a parent's children array
@@ -178,6 +181,30 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
     }));
   },
 
+  updateComponentEvents: (id, events) => {
+    const updateEventsRecursive = (components: Component[]): Component[] => {
+      return components.map(component => {
+        if (component.id === id) {
+          return {
+            ...component,
+            events
+          };
+        }
+        if (component.components) {
+          return {
+            ...component,
+            components: updateEventsRecursive(component.components)
+          };
+        }
+        return component;
+      });
+    };
+
+    set((state) => ({
+      components: updateEventsRecursive(state.components)
+    }));
+  },
+
   deleteComponent: (id) => {
     const deleteComponentRecursive = (components: Component[]): Component[] => {
       return components.filter(component => {
@@ -310,5 +337,9 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
       components: [...state.components, ...components],
       selectedComponentId: null,
     }));
+  },
+
+  setComponents: (components) => {
+    set({ components });
   },
 }));
