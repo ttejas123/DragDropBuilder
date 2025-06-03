@@ -1,4 +1,7 @@
 import { Component } from '@shared/schema';
+import { ChevronDown, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import { cn } from '@/lib/utils';
 
 // JSON Renderer - renders components from JSON structure
 export function JsonRenderer({ component }: { component: Component }) {

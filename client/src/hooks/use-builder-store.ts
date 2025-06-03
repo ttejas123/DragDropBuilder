@@ -16,6 +16,7 @@ interface BuilderStore {
   getSelectedComponent: () => Component | null;
   exportJSON: () => string;
   clearCanvas: () => void;
+  importComponents: (components: Component[]) => void;
 }
 
 // Helper function to add a component to a parent's children array
@@ -302,5 +303,12 @@ export const useBuilderStore = create<BuilderStore>((set, get) => ({
 
   clearCanvas: () => {
     set({ components: [], selectedComponentId: null });
+  },
+
+  importComponents: (components) => {
+    set((state) => ({
+      components: [...state.components, ...components],
+      selectedComponentId: null,
+    }));
   },
 }));

@@ -8,7 +8,9 @@ import { DragItemTypes, getDropPosition } from '@/lib/drag-drop-utils';
 import { CanvasComponent } from './canvas-component';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { JsonTreeRenderer } from './json-renderer';
-import { Undo, Redo, ZoomIn, ZoomOut, Eye, Smartphone, Tablet, Monitor } from 'lucide-react';
+import { ZoomIn, ZoomOut, Eye, Smartphone, Tablet, Monitor, Import, Download } from 'lucide-react';
+import { useBuilderStore } from '@/hooks/use-builder-store';
+import { ImportModal } from './import-modal';
 
 interface CanvasAreaProps {
   components: Component[];
@@ -33,6 +35,8 @@ export function CanvasArea({
   const [viewport, setViewport] = useState<'desktop' | 'tablet' | 'mobile'>('mobile');
   const [zoom, setZoom] = useState(100);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const { exportJSON, importComponents } = useBuilderStore();
 
   const [{ isOver, canDrop }, drop] = useDrop(() => ({
     accept: [DragItemTypes.COMPONENT, DragItemTypes.CANVAS_COMPONENT],
@@ -71,6 +75,19 @@ export function CanvasArea({
 
   const handlePreview = () => {
     setIsPreviewOpen(true);
+  };
+
+  const handleExport = () => {
+    const json = exportJSON();
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'components.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const getCanvasSize = () => {
@@ -147,6 +164,15 @@ export function CanvasArea({
           <Button
             variant="outline"
             size="icon"
+            onClick={() => setIsImportModalOpen(true)}
+            title="Import Components"
+          >
+            <Import className="h-4 w-4" />
+          </Button>
+
+          <Button
+            variant="outline"
+            size="icon"
             onClick={handlePreview}
           >
             <Eye className="h-4 w-4" />
@@ -210,24 +236,20 @@ export function CanvasArea({
         </div>
       </div>
       
-      {/* Preview Modal */}
-      <Dialog open={isPreviewOpen} onOpenChange={() => setIsPreviewOpen(false)}>
-        <DialogContent className="max-w-4xl w-full h-[80vh]">
+      <ImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImport={importComponents}
+      />
+
+      {/* Preview Dialog */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-4xl w-full">
           <DialogHeader>
             <DialogTitle>Preview</DialogTitle>
           </DialogHeader>
-          <div className="flex-1 overflow-auto p-4 bg-muted rounded-lg">
-            {components.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <Eye className="w-16 h-16 mx-auto mb-4" />
-                <p className="text-lg font-medium mb-2">No components to preview</p>
-                <p className="text-sm">Add some components to see the preview</p>
-              </div>
-            ) : (
-              <div className="bg-background p-6 rounded-lg shadow-sm">
-                <JsonTreeRenderer components={components} />
-              </div>
-            )}
+          <div className="overflow-auto max-h-[80vh]">
+            <JsonTreeRenderer components={components} />
           </div>
         </DialogContent>
       </Dialog>
